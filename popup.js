@@ -20,7 +20,7 @@ secondButton.addEventListener('click', async () => {
 
   chrome.scripting.executeScript({
     target: { tabId: tab.id },
-    function: checkWalletData
+    function: getUsersData
   })
 })
 
@@ -54,29 +54,40 @@ function getWalletData() {
       if (row.classList && row.classList.contains('row')) {
         row.childNodes.forEach((cell, i) => {
           if (i === 0) {
-            portfolioItem.link = cell.href
+            // portfolioItem.link = cell.href
 
             cell.childNodes.forEach((aPart, i) => {
               if (aPart.classList.contains('holdings__name')) {
-                portfolioItem.name = aPart.childNodes[0].innerHTML
+                portfolioItem.username = aPart.childNodes[0].innerHTML
+                row.id = portfolioItem.username
               }
             })
           } else if (i === 1) {
-            portfolioItem.coinPrice = cell.childNodes[0].innerHTML.match(
+            let coinPriceCell = cell.childNodes[0]
+
+            portfolioItem.coinPrice = coinPriceCell.innerHTML.match(
               floatNumberPattern
             )[0]
+
+            coinPriceCell.classList.add('coinPriceCell')
           } else if (i === 2) {
-            portfolioItem.assetsInUsd = cell.childNodes[0].childNodes[0].innerHTML.match(
+            let assetsInUsdCell = cell.childNodes[0].childNodes[0]
+            let assetsInBitCloutCell = cell.childNodes[0].childNodes[1]
+
+            portfolioItem.assetsInUsd = assetsInUsdCell.innerHTML.match(
               floatNumberPattern
             )[0]
 
-            portfolioItem.assetsInBitClout = cell.childNodes[0].childNodes[1].innerHTML.match(
+            portfolioItem.assetsInBitClout = assetsInBitCloutCell.innerHTML.match(
               floatNumberPattern
             )[0]
+
+            assetsInUsdCell.classList.add('assetsInUsdCell')
+            assetsInBitCloutCell.classList.add('assetsInBitCloutCell')
           }
-
-          portfolio.push(portfolioItem)
         })
+
+        portfolio.push(portfolioItem)
       }
     })
   })
@@ -86,70 +97,135 @@ function getWalletData() {
   chrome.storage.local.set({ portfolio })
 }
 
-function checkWalletData() {
-  const parser = new DOMParser()
+function getUsersData() {
+  let newPortfolio = []
 
   chrome.storage.local.get(
     ['bitCloutPrice', 'publicKey', 'portfolio'],
     ({ bitCloutPrice, publicKey, portfolio }) => {
-      console.log(bitCloutPrice, publicKey, portfolio)
+      console.log(portfolio.length, portfolio)
 
-      const data = {
-        AddGlobalFeedBool: false,
-        Description: '',
-        FetchUsersThatHODL: true,
-        ModerationType: '',
-        NumToFetch: 1,
-        OrderBy: 'newest_last_post',
-        PublicKeyBase58Check: '',
-        ReaderPublicKeyBase58Check: publicKey,
-        Username: isername,
-        UsernamePrefix: ''
-      }
+      portfolio.forEach((user, i) => {
+        const parser = new DOMParser()
 
-      fetch('https://api.bitclout.com/get-profiles', {
-        method: 'POST', // or 'PUT'
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
+        const data = {
+          AddGlobalFeedBool: false,
+          Description: '',
+          FetchUsersThatHODL: true,
+          ModerationType: '',
+          NumToFetch: 1,
+          OrderBy: 'newest_last_post',
+          PublicKeyBase58Check: '',
+          ReaderPublicKeyBase58Check: publicKey,
+          Username: user.username,
+          UsernamePrefix: ''
+        }
+
+        fetch('https://api.bitclout.com/get-profiles', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            user.isVerified = data['ProfilesFound'][0]['IsVerified']
+            user.coinEntry = {}
+
+            user.coinEntry.creatorBasisPoints =
+              data['ProfilesFound'][0]['CoinEntry']['CreatorBasisPoints']
+
+            user.coinEntry.bitCloutLockedNanos =
+              data['ProfilesFound'][0]['CoinEntry']['BitCloutLockedNanos']
+
+            user.coinEntry.coinsInCirculationNanos =
+              data['ProfilesFound'][0]['CoinEntry']['CoinsInCirculationNanos']
+
+            user.coinEntry.coinWatermarkNanos =
+              data['ProfilesFound'][0]['CoinEntry']['CoinWatermarkNanos']
+
+            user.coinPriceBitCloutNanos =
+              data['ProfilesFound'][0]['CoinPriceBitCloutNanos']
+
+            user.stakeMultipleBasisPoints =
+              data['ProfilesFound'][0]['StakeMultipleBasisPoints']
+
+            let realCoinPrice =
+              (user.coinPriceBitCloutNanos * bitCloutPrice) / 1000000000
+
+            realCoinPrice = realCoinPrice.toLocaleString()
+
+            let coinPriceCell = document.querySelector(
+              `#${user.username} .coinPriceCell`
+            )
+
+            coinPriceCell.innerText = ['$', realCoinPrice].join('')
+
+            newPortfolio.push(user)
+
+            console.log('Success:', data)
+          })
+          .catch((error) => {
+            console.error('Error:', error)
+          })
       })
-        .then((response) => response.json())
-        .then((data) => {
-          console.log('Success:', data)
-        })
-        .catch((error) => {
-          console.error('Error:', error)
-        })
     }
   )
-
-  // chrome.storage.local.get('publicKey', ({ publicKey }) => {
-  //   console.log('Value currently is', publicKey)
-  // })
-  //
-  // chrome.storage.local.get('portfolio', ({ portfolio }) => {
-  //   console.log('Value currently is', portfolio)
-  // })
-
-  // fetch('https://bitclout.com/u/angelasimmons')
-  //   .then((response) => response.text())
-  //   .then((data) => console.log(data))
 }
 
-function stripResponseData(response) {
-  let stripedData = {
-    username: response['Username'],
-    isVerified: response['IsVerified'],
-    coinEntry: {
-      creatorBasisPoints: response['CoinEntry']['CreatorBasisPoints'],
-      bitCloutLockedNanos: response['CoinEntry']['BitCloutLockedNanos'],
-      coinsInCirculationNanos: response['CoinEntry']['CoinsInCirculationNanos'],
-      coinWatermarkNanos: response['CoinEntry']['CoinWatermarkNanos']
-    },
-    coinPriceBitCloutNanos: response['CoinPriceBitCloutNanos'],
-    stakeMultipleBasisPoints: response['StakeMultipleBasisPoints']
-  }
+// function getUserData(username) {
+//   const parser = new DOMParser()
+//
+//   chrome.storage.local.get(
+//     ['bitCloutPrice', 'publicKey', 'portfolio'],
+//     ({ bitCloutPrice, publicKey, portfolio }) => {
+//       let userData = {}
+//
+//       const data = {
+//         AddGlobalFeedBool: false,
+//         Description: '',
+//         FetchUsersThatHODL: true,
+//         ModerationType: '',
+//         NumToFetch: 1,
+//         OrderBy: 'newest_last_post',
+//         PublicKeyBase58Check: '',
+//         ReaderPublicKeyBase58Check: publicKey,
+//         Username: username,
+//         UsernamePrefix: ''
+//       }
+//
+//       fetch('https://api.bitclout.com/get-profiles', {
+//         method: 'POST',
+//         headers: {
+//           'Content-Type': 'application/json'
+//         },
+//         body: JSON.stringify(data)
+//       })
+//         .then((response) => response.json())
+//         .then((data) => {
+//           userData = stripResponseData(data)
+//           console.log('Success:', data)
+//         })
+//         .catch((error) => {
+//           console.error('Error:', error)
+//         })
+//     }
+//   )
+// }
 
-  return stripedData
-}
+// function stripResponseData(response) {
+//   let stripedData = {
+//     isVerified: response['IsVerified'],
+//     coinEntry: {
+//       creatorBasisPoints: response['CoinEntry']['CreatorBasisPoints'],
+//       bitCloutLockedNanos: response['CoinEntry']['BitCloutLockedNanos'],
+//       coinsInCirculationNanos: response['CoinEntry']['CoinsInCirculationNanos'],
+//       coinWatermarkNanos: response['CoinEntry']['CoinWatermarkNanos']
+//     },
+//     coinPriceBitCloutNanos: response['CoinPriceBitCloutNanos'],
+//     stakeMultipleBasisPoints: response['StakeMultipleBasisPoints']
+//   }
+//
+//   return stripedData
+// }
