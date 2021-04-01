@@ -4,10 +4,8 @@ chrome.storage.onChanged.addListener(function (changes, namespace) {
   console.log('Storage changed')
 })
 
-// Initialize button with user's preferred color
 let firstButton = document.getElementById('firstButton')
 
-// When the button is clicked, inject setPageBackgroundColor into current page
 firstButton.addEventListener('click', async () => {
   let [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
 
@@ -26,21 +24,23 @@ secondButton.addEventListener('click', async () => {
   })
 })
 
-// The body of this function will be executed as a content script inside the
-// current page
 function getWalletData() {
-  let walletData = {}
+  let bitCloutPrice = 0
+  let publickKey = ''
   let portfolio = []
 
   let floatNumberPattern = /[-+]?[0-9]*\.?[0-9]+/g
 
-  let bitCloutPriceWrapper = document.querySelector(
-    '.right-bar-creators__balance-box .d-flex div:last-child'
-  )
-
-  walletData.bitCloutPrice = bitCloutPriceWrapper.innerHTML
-    .match(/[^ ]*/i)[0]
+  bitCloutPrice = document
+    .querySelector('.right-bar-creators__balance-box .d-flex div:last-child')
+    .innerHTML.match(/[^ ]*/i)[0]
     .substring(2)
+
+  publicKey = document
+    .querySelector(
+      '.global__center__width .global__mobile-scrollable-section > .container'
+    )
+    .childNodes[1].childNodes[1].textContent.replace(/\s/g, '')
 
   let walletItems = document.querySelector(
     '.global__center__width .global__mobile-scrollable-section > .fs-15px:not(.container)'
@@ -81,25 +81,75 @@ function getWalletData() {
     })
   })
 
-  chrome.storage.local.set({ walletData })
+  chrome.storage.local.set({ bitCloutPrice })
+  chrome.storage.local.set({ publicKey })
   chrome.storage.local.set({ portfolio })
 }
 
 function checkWalletData() {
-  chrome.storage.local.get('walletData', ({ walletData }) => {
-    console.log('Value currently is', walletData)
-  })
+  const parser = new DOMParser()
 
-  chrome.storage.local.get('portfolio', ({ portfolio }) => {
-    console.log('Value currently is', portfolio)
-  })
+  chrome.storage.local.get(
+    ['bitCloutPrice', 'publicKey', 'portfolio'],
+    ({ bitCloutPrice, publicKey, portfolio }) => {
+      console.log(bitCloutPrice, publicKey, portfolio)
+
+      const data = {
+        AddGlobalFeedBool: false,
+        Description: '',
+        FetchUsersThatHODL: true,
+        ModerationType: '',
+        NumToFetch: 1,
+        OrderBy: 'newest_last_post',
+        PublicKeyBase58Check: '',
+        ReaderPublicKeyBase58Check: publicKey,
+        Username: isername,
+        UsernamePrefix: ''
+      }
+
+      fetch('https://api.bitclout.com/get-profiles', {
+        method: 'POST', // or 'PUT'
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          console.log('Success:', data)
+        })
+        .catch((error) => {
+          console.error('Error:', error)
+        })
+    }
+  )
+
+  // chrome.storage.local.get('publicKey', ({ publicKey }) => {
+  //   console.log('Value currently is', publicKey)
+  // })
+  //
+  // chrome.storage.local.get('portfolio', ({ portfolio }) => {
+  //   console.log('Value currently is', portfolio)
+  // })
+
+  // fetch('https://bitclout.com/u/angelasimmons')
+  //   .then((response) => response.text())
+  //   .then((data) => console.log(data))
 }
 
-// The body of this function will be executed as a content script inside the
-// current page
-// function setPageBackgroundColor() {
-//   console.log('test')
-//   chrome.storage.sync.get('color', ({ color }) => {
-//     document.body.style.backgroundColor = color
-//   })
-// }
+function stripResponseData(response) {
+  let stripedData = {
+    username: response['Username'],
+    isVerified: response['IsVerified'],
+    coinEntry: {
+      creatorBasisPoints: response['CoinEntry']['CreatorBasisPoints'],
+      bitCloutLockedNanos: response['CoinEntry']['BitCloutLockedNanos'],
+      coinsInCirculationNanos: response['CoinEntry']['CoinsInCirculationNanos'],
+      coinWatermarkNanos: response['CoinEntry']['CoinWatermarkNanos']
+    },
+    coinPriceBitCloutNanos: response['CoinPriceBitCloutNanos'],
+    stakeMultipleBasisPoints: response['StakeMultipleBasisPoints']
+  }
+
+  return stripedData
+}
