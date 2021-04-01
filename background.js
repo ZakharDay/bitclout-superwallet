@@ -1,5 +1,5 @@
-let state = 'loaded'
-
-chrome.runtime.onInstalled.addListener(() => {
-  chrome.storage.local.set({ state })
-})
+// let state = 'loaded'
+//
+// chrome.runtime.onInstalled.addListener(() => {
+//   chrome.storage.local.set({ state })
+// })
