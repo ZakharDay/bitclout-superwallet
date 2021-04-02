@@ -1,12 +1,16 @@
-button {
-  height: 30px;
+#button {
   width: 150px;
-  outline: none;
+  height: 30px;
+  line-height: 30px;
   margin: 10px;
-  border: none;
   border-radius: 2px;
+  background: #005bff;
+  text-align: center;
+  outline: none;
+  color: white;
+  cursor: pointer;
 }
 
-button.current {
-  box-shadow: 0 0 0 2px white, 0 0 0 4px black;
+#button:hover {
+  filter: brightness(120%);
 }

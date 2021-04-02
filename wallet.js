@@ -152,7 +152,16 @@ function prepareForNextDataLoad() {
   if (portfolioRows && portfolioRows.length > 0) {
     for (let row of portfolioRows) {
       let coinPrice = row.getElementsByClassName('coinPriceCell')[0].innerText
+      // row.style.setProperty('align-items', 'center')
+
+      row.style.position = 'relative'
+      row.style.paddingTop = '20px'
+
       row.getElementsByClassName('oldCoinPriceCell')[0].innerText = coinPrice
+
+      row.getElementsByClassName(
+        'holdings__creator-coin-total'
+      )[0].style.paddingTop = '0'
     }
   }
 }
@@ -214,6 +223,7 @@ function updatePortfolioItemData(data) {
           let newPortfolioItem = mergePortfolioItemData(portfolioItem, data)
           let realCoinPrice = calcRealCoinPrice(newPortfolioItem, bitCloutPrice)
           updateCoinPriceCell(newPortfolioItem, realCoinPrice)
+          addGitCloutPulseLink(newPortfolioItem)
 
           newPortfolio.push(newPortfolioItem)
         } else {
@@ -245,13 +255,44 @@ function calcRealCoinPrice(portfolioItem, bitCloutPrice) {
   return realCoinPrice
 }
 
-// function addGitCloutPulseLink(username, publicKey) {
-//   ;`https://www.bitcloutpulse.com/profiles/${publicKey}`
-// }
+function addGitCloutPulseLink(portfolioItem) {
+  let gitCloutPulseLink = document.querySelector(
+    `#${portfolioItem.username} .gitCloutPulseLink`
+  )
+
+  if (gitCloutPulseLink === null) {
+    let portfolioRow = document.getElementById(`${portfolioItem.username}`)
+
+    gitCloutPulseLink = document.createElement('a')
+    gitCloutPulseLink.href = `https://www.bitcloutpulse.com/profiles/${portfolioItem.publicKey}`
+    gitCloutPulseLink.classList.add('gitCloutPulseLink')
+
+    gitCloutPulseLink.style.backgroundColor = '#005bff'
+    gitCloutPulseLink.style.borderRadius = '10px'
+    gitCloutPulseLink.style.borderWidth = '1px'
+    gitCloutPulseLink.style.borderColor = 'white'
+    gitCloutPulseLink.style.borderStyle = 'solid'
+    gitCloutPulseLink.style.position = 'absolute'
+    gitCloutPulseLink.style.top = '16px'
+    gitCloutPulseLink.style.left = '38px'
+    gitCloutPulseLink.style.width = '16px'
+    gitCloutPulseLink.style.height = '16px'
+    gitCloutPulseLink.style.lineHeight = '16px'
+    gitCloutPulseLink.style.marginRight = '10px'
+    gitCloutPulseLink.style.fontSize = '10px'
+    gitCloutPulseLink.style.textAlign = 'center'
+    gitCloutPulseLink.style.color = 'white'
+    gitCloutPulseLink.target = '_blank'
+    gitCloutPulseLink.innerText = 'P'
+
+    portfolioRow.appendChild(gitCloutPulseLink)
+  }
+}
 
 function mergePortfolioItemData(portfolioItem, data) {
   let newPortfolioItem = Object.assign({}, portfolioItem)
 
+  newPortfolioItem.publicKey = data['ProfilesFound'][0]['PublicKeyBase58Check']
   newPortfolioItem.isVerified = data['ProfilesFound'][0]['IsVerified']
 
   newPortfolioItem.coinEntry = {
