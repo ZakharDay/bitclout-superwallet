@@ -211,40 +211,10 @@ function updatePortfolioItemData(data) {
 
       portfolio.forEach((portfolioItem, i) => {
         if (portfolioItem.username === data['ProfilesFound'][0]['Username']) {
-          let newPortfolioItem = Object.assign({}, portfolioItem)
+          let newPortfolioItem = mergePortfolioItemData(portfolioItem, data)
+          let realCoinPrice = calcRealCoinPrice(newPortfolioItem, bitCloutPrice)
+          updateCoinPriceCell(newPortfolioItem, realCoinPrice)
 
-          newPortfolioItem.isVerified = data['ProfilesFound'][0]['IsVerified']
-
-          newPortfolioItem.coinEntry = {
-            creatorBasisPoints:
-              data['ProfilesFound'][0]['CoinEntry']['CreatorBasisPoints'],
-            bitCloutLockedNanos:
-              data['ProfilesFound'][0]['CoinEntry']['BitCloutLockedNanos'],
-            coinsInCirculationNanos:
-              data['ProfilesFound'][0]['CoinEntry']['CoinsInCirculationNanos'],
-            coinWatermarkNanos:
-              data['ProfilesFound'][0]['CoinEntry']['CoinWatermarkNanos']
-          }
-
-          newPortfolioItem.coinPriceBitCloutNanos =
-            data['ProfilesFound'][0]['CoinPriceBitCloutNanos']
-
-          newPortfolioItem.stakeMultipleBasisPoints =
-            data['ProfilesFound'][0]['StakeMultipleBasisPoints']
-
-          let realCoinPrice =
-            (newPortfolioItem.coinPriceBitCloutNanos * bitCloutPrice) /
-            1000000000
-
-          realCoinPrice = realCoinPrice.toLocaleString(undefined, {
-            maximumFractionDigits: 2
-          })
-
-          let coinPriceCell = document.querySelector(
-            `#${newPortfolioItem.username} .coinPriceCell`
-          )
-
-          coinPriceCell.innerText = ['$', realCoinPrice].join('')
           newPortfolio.push(newPortfolioItem)
         } else {
           newPortfolio.push(portfolioItem)
@@ -254,6 +224,54 @@ function updatePortfolioItemData(data) {
       chrome.storage.local.set({ portfolio: newPortfolio })
     }
   )
+}
+
+function updateCoinPriceCell(portfolioItem, realCoinPrice) {
+  let coinPriceCell = document.querySelector(
+    `#${portfolioItem.username} .coinPriceCell`
+  )
+
+  coinPriceCell.innerText = ['$', realCoinPrice].join('')
+}
+
+function calcRealCoinPrice(portfolioItem, bitCloutPrice) {
+  let realCoinPrice =
+    (portfolioItem.coinPriceBitCloutNanos * bitCloutPrice) / 1000000000
+
+  realCoinPrice = realCoinPrice.toLocaleString(undefined, {
+    maximumFractionDigits: 2
+  })
+
+  return realCoinPrice
+}
+
+// function addGitCloutPulseLink(username, publicKey) {
+//   ;`https://www.bitcloutpulse.com/profiles/${publicKey}`
+// }
+
+function mergePortfolioItemData(portfolioItem, data) {
+  let newPortfolioItem = Object.assign({}, portfolioItem)
+
+  newPortfolioItem.isVerified = data['ProfilesFound'][0]['IsVerified']
+
+  newPortfolioItem.coinEntry = {
+    creatorBasisPoints:
+      data['ProfilesFound'][0]['CoinEntry']['CreatorBasisPoints'],
+    bitCloutLockedNanos:
+      data['ProfilesFound'][0]['CoinEntry']['BitCloutLockedNanos'],
+    coinsInCirculationNanos:
+      data['ProfilesFound'][0]['CoinEntry']['CoinsInCirculationNanos'],
+    coinWatermarkNanos:
+      data['ProfilesFound'][0]['CoinEntry']['CoinWatermarkNanos']
+  }
+
+  newPortfolioItem.coinPriceBitCloutNanos =
+    data['ProfilesFound'][0]['CoinPriceBitCloutNanos']
+
+  newPortfolioItem.stakeMultipleBasisPoints =
+    data['ProfilesFound'][0]['StakeMultipleBasisPoints']
+
+  return newPortfolioItem
 }
 
 getWalletData()
