@@ -163,11 +163,11 @@ function getUsersData() {
   let newPortfolio = []
 
   portfolio.forEach((portfolioItem, i) => {
-    getUserData(portfolioItem.username, publicKey)
+    getUserData(portfolioItem.username, publicKey, 'wallet')
   })
 }
 
-function getUserData(username, publicKey) {
+function getUserData(username, publicKey, context) {
   const parser = new DOMParser()
 
   const data = {
@@ -195,7 +195,11 @@ function getUserData(username, publicKey) {
   })
     .then((response) => response.json())
     .then((data) => {
-      updatePortfolioItemData(data)
+      if (context === 'wallet') {
+        updatePortfolioItemData(data)
+      } else if (context === 'profile') {
+        updateProfile(data)
+      }
       // console.log('Success:', data)
     })
     .catch((error) => {
@@ -301,6 +305,37 @@ function updateNameCell(portfolioItem) {
   ].join(' ')
 }
 
+function addFounderRewardPercentage(creatorData) {
+  let wrapper = document.createElement('div')
+  wrapper.style.whitespace = 'nowrap'
+
+  let percent = document.createElement('div')
+  percent.classList.add('font-weight-bold')
+  percent.style.display = 'inline'
+  percent.innerText = calcFounderRewardPercentage(creatorData)
+
+  let label = document.createElement('div')
+  label.classList.add('fc-muted')
+  label.style.display = 'inline'
+  label.innerText = ' Founder Reward'
+
+  wrapper.appendChild(percent)
+  wrapper.appendChild(label)
+
+  document
+    .querySelector(
+      '.global__center__inner .d-flex.flex-column.pl-15px.pr-15px .fs-15px.pt-5px.d-flex.flex-wrap'
+    )
+    .appendChild(wrapper)
+}
+
+function updateProfile(data) {
+  let creatorData = mergePortfolioItemData({}, data, publicKey, bitCloutPrice)
+
+  addGitCloutPulseLinkToProfile(creatorData)
+  addFounderRewardPercentage(creatorData)
+}
+
 function calcRealCoinPrice(portfolioItem, bitCloutPrice) {
   return (portfolioItem.coinPriceBitCloutNanos * bitCloutPrice) / 1000000000
 }
@@ -366,6 +401,36 @@ function addGitCloutPulseLink(portfolioItem) {
     gitCloutPulseLink.innerText = 'P'
 
     portfolioRow.appendChild(gitCloutPulseLink)
+  }
+}
+
+function addGitCloutPulseLinkToProfile(creatorData) {
+  let creatorProfileTopCard = document.querySelector(
+    '.global__center__inner .position-relative'
+  )
+
+  if (creatorProfileTopCard != null) {
+    gitCloutPulseLink = document.createElement('a')
+    gitCloutPulseLink.href = `https://www.bitcloutpulse.com/profiles/${creatorData.publicKey}`
+    gitCloutPulseLink.classList.add('gitCloutPulseLink')
+
+    gitCloutPulseLink.style.backgroundColor = '#005bff'
+    gitCloutPulseLink.style.borderRadius = '12px'
+    gitCloutPulseLink.style.position = 'absolute'
+    gitCloutPulseLink.style.top = '96px'
+    gitCloutPulseLink.style.left = '110px'
+    gitCloutPulseLink.style.width = '24px'
+    gitCloutPulseLink.style.height = '24px'
+    gitCloutPulseLink.style.lineHeight = '24px'
+    gitCloutPulseLink.style.fontSize = '16px'
+    gitCloutPulseLink.style.textAlign = 'center'
+    gitCloutPulseLink.style.color = 'white'
+    gitCloutPulseLink.target = '_blank'
+    gitCloutPulseLink.innerText = 'P'
+
+    creatorProfileTopCard.appendChild(gitCloutPulseLink)
+  } else {
+    waitAsyncPageLoad()
   }
 }
 
@@ -457,21 +522,32 @@ function observeUrlChange() {
 }
 
 function waitAsyncPageLoad() {
-  if (window.location.href === 'https://bitclout.com/wallet') {
+  let url = window.location.href
+  let urlPart = url.substr(21)
+  let urlPartFirstLetter = urlPart.charAt(0)
+
+  if (urlPartFirstLetter === 'w' || urlPartFirstLetter === 'u') {
     let detectionElement = document.getElementsByClassName(
       'global__center__inner'
     )
 
     if (detectionElement != null && detectionElement.length > 0) {
-      addForceWalletUpdateButton()
-      updateWalletData()
-      pageLoaded = true
+      if (urlPartFirstLetter === 'w') {
+        addForceWalletUpdateButton()
+        updateWalletData()
+      } else if (urlPartFirstLetter === 'u') {
+        let urlLastPart = urlPart.substr(urlPart.lastIndexOf('/') + 1)
+
+        if (urlLastPart != 'buy' && urlLastPart != 'sell') {
+          username = url.substr(23)
+          getUserData(username, '', 'profile')
+        }
+      }
     } else {
       setTimeout(() => {
         waitAsyncPageLoad()
       }, 1000)
     }
-  } else {
   }
 }
 
