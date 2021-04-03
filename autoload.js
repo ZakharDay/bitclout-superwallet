@@ -1,6 +1,11 @@
+const floatNumberPattern = /[-+]?[0-9]*\.?[0-9]+/g
+let pageLoaded = false
+let pageUpdated = false
+let publicKey = ''
+let bitCloutPrice = 0
+let portfolio = []
+
 async function getWalletData() {
-  let bitCloutPrice = 0
-  let publickKey = ''
   let loadingDetectionElement = document.querySelector('.coinPriceCell')
 
   let walletItems = document.querySelector(
@@ -19,65 +24,13 @@ async function getWalletData() {
       )
       .childNodes[1].childNodes[1].textContent.replace(/\s/g, '')
 
-    chrome.storage.local.set({ bitCloutPrice })
-    chrome.storage.local.set({ publicKey })
-
     await updateGridOnFirstLoad(walletItems)
   } else {
     await updateGrid(walletItems)
   }
 }
 
-async function updateGrid(walletItems) {
-  const floatNumberPattern = /[-+]?[0-9]*\.?[0-9]+/g
-
-  await chrome.storage.local.get('portfolio', ({ portfolio }) => {
-    let newPortfolio = [...portfolio]
-
-    walletItems.forEach((walletItem, i) => {
-      let rows = walletItem.childNodes
-
-      rows.forEach((row, i) => {
-        let username = ''
-
-        if (row.classList && row.classList.contains('row')) {
-          row.childNodes.forEach((cell, i) => {
-            if (i === 0) {
-              cell.childNodes.forEach((aPart, i) => {
-                if (aPart.classList.contains('holdings__name')) {
-                  username = aPart.childNodes[0].innerHTML
-                }
-              })
-            } else if (i === 1) {
-              let coinPriceCell = cell.childNodes[0]
-              let oldCoinPriceCell = cell.childNodes[1]
-              let coinPrice = coinPriceCell.innerHTML
-
-              oldCoinPriceCell.innerHTML = coinPrice
-
-              newPortfolio.map((portfolioItem, i) => {
-                if (portfolioItem.username === username) {
-                  portfolioItem.oldCoinPrice = coinPrice.match(
-                    floatNumberPattern
-                  )[0]
-
-                  return portfolioItem
-                }
-              })
-            }
-          })
-        }
-      })
-    })
-
-    chrome.storage.local.set({ portfolio: newPortfolio })
-  })
-}
-
 function updateGridOnFirstLoad(walletItems) {
-  const floatNumberPattern = /[-+]?[0-9]*\.?[0-9]+/g
-  let portfolio = []
-
   walletItems.forEach((walletItem, i) => {
     let portfolioItem = {}
     let rows = walletItem.childNodes
@@ -142,8 +95,48 @@ function updateGridOnFirstLoad(walletItems) {
       }
     })
   })
+}
 
-  chrome.storage.local.set({ portfolio: portfolio })
+async function updateGrid(walletItems) {
+  let newPortfolio = [...portfolio]
+
+  walletItems.forEach((walletItem, i) => {
+    let rows = walletItem.childNodes
+
+    rows.forEach((row, i) => {
+      let username = ''
+
+      if (row.classList && row.classList.contains('row')) {
+        row.childNodes.forEach((cell, i) => {
+          if (i === 0) {
+            cell.childNodes.forEach((aPart, i) => {
+              if (aPart.classList.contains('holdings__name')) {
+                username = aPart.childNodes[0].innerHTML
+              }
+            })
+          } else if (i === 1) {
+            let coinPriceCell = cell.childNodes[0]
+            let oldCoinPriceCell = cell.childNodes[1]
+            let coinPrice = coinPriceCell.innerHTML
+
+            oldCoinPriceCell.innerHTML = coinPrice
+
+            newPortfolio.map((portfolioItem, i) => {
+              if (portfolioItem.username === username) {
+                portfolioItem.oldCoinPrice = coinPrice.match(
+                  floatNumberPattern
+                )[0]
+
+                return portfolioItem
+              }
+            })
+          }
+        })
+      }
+    })
+  })
+
+  portfolio = newPortfolio
 }
 
 function prepareForNextDataLoad() {
@@ -167,16 +160,11 @@ function prepareForNextDataLoad() {
 }
 
 function getUsersData() {
-  chrome.storage.local.get(
-    ['bitCloutPrice', 'publicKey', 'portfolio'],
-    ({ bitCloutPrice, publicKey, portfolio }) => {
-      let newPortfolio = []
+  let newPortfolio = []
 
-      portfolio.forEach((portfolioItem, i) => {
-        getUserData(portfolioItem.username, publicKey)
-      })
-    }
-  )
+  portfolio.forEach((portfolioItem, i) => {
+    getUserData(portfolioItem.username, publicKey)
+  })
 }
 
 function getUserData(username, publicKey) {
@@ -218,8 +206,6 @@ function getUserData(username, publicKey) {
 function clearCoinPriceCells() {
   let coinPriceCells = document.getElementsByClassName('coinPriceCell')
 
-  console.log(coinPriceCells)
-
   for (let coinPriceCell of coinPriceCells) {
     coinPriceCell.innerHTML = '–'
   }
@@ -234,40 +220,35 @@ function clearSharePriceInUsdCells() {
 }
 
 function updatePortfolioItemData(data) {
-  chrome.storage.local.get(
-    ['publicKey', 'bitCloutPrice', 'portfolio'],
-    ({ publicKey, bitCloutPrice, portfolio }) => {
-      let newPortfolio = []
+  let newPortfolio = []
 
-      portfolio.forEach((portfolioItem, i) => {
-        if (portfolioItem.username === data['ProfilesFound'][0]['Username']) {
-          let newPortfolioItem = mergePortfolioItemData(
-            portfolioItem,
-            data,
-            publicKey,
-            bitCloutPrice
-          )
+  portfolio.forEach((portfolioItem, i) => {
+    if (portfolioItem.username === data['ProfilesFound'][0]['Username']) {
+      let newPortfolioItem = mergePortfolioItemData(
+        portfolioItem,
+        data,
+        publicKey,
+        bitCloutPrice
+      )
 
-          let realCoinPrice = calcAndFormatRealCoinPrice(
-            newPortfolioItem,
-            bitCloutPrice
-          )
+      let realCoinPrice = calcAndFormatRealCoinPrice(
+        newPortfolioItem,
+        bitCloutPrice
+      )
 
-          updateNameCell(newPortfolioItem)
-          updateCoinPriceCell(newPortfolioItem, realCoinPrice)
-          updateSharePriceInUsdCell(newPortfolioItem)
-          updateShareCell(newPortfolioItem)
-          addGitCloutPulseLink(newPortfolioItem)
+      updateNameCell(newPortfolioItem)
+      updateCoinPriceCell(newPortfolioItem, realCoinPrice)
+      updateSharePriceInUsdCell(newPortfolioItem)
+      updateShareCell(newPortfolioItem)
+      addGitCloutPulseLink(newPortfolioItem)
 
-          newPortfolio.push(newPortfolioItem)
-        } else {
-          newPortfolio.push(portfolioItem)
-        }
-      })
-
-      chrome.storage.local.set({ portfolio: newPortfolio })
+      newPortfolio.push(newPortfolioItem)
+    } else {
+      newPortfolio.push(portfolioItem)
     }
-  )
+  })
+
+  portfolio = newPortfolio
 }
 
 function updateCoinPriceCell(portfolioItem, realCoinPrice) {
@@ -348,8 +329,6 @@ function calcPortfolioItemPriceInUsd(
   bitCloutPrice,
   userThatHODL
 ) {
-  console.log(newPortfolioItem)
-
   return (
     calcPortfolioItemShare(userThatHODL) *
     calcRealCoinPrice(newPortfolioItem, bitCloutPrice)
@@ -430,6 +409,71 @@ function mergePortfolioItemData(portfolioItem, data, publicKey, bitCloutPrice) {
   return newPortfolioItem
 }
 
-getWalletData()
-  .then(() => prepareForNextDataLoad())
-  .then(() => getUsersData())
+function updateWalletData() {
+  getWalletData()
+    .then(() => prepareForNextDataLoad())
+    .then(() => getUsersData())
+}
+
+function addForceWalletUpdateButton() {
+  let topBar = document.getElementsByClassName('global__top-bar')[0]
+  let forceWalletUpdateButton = document.createElement('div')
+
+  topBar.style.setProperty('justify-content', 'space-between')
+
+  forceWalletUpdateButton.classList.add('forceWalletUpdateButton')
+  forceWalletUpdateButton.innerHTML = 'Update wallet'
+  forceWalletUpdateButton.style.width = '180px'
+  forceWalletUpdateButton.style.height = '40px'
+  forceWalletUpdateButton.style.marginRight = '15px'
+  forceWalletUpdateButton.style.backgroundColor = '#005bff'
+  forceWalletUpdateButton.style.borderRadius = '5px'
+  forceWalletUpdateButton.style.textAlign = 'center'
+  forceWalletUpdateButton.style.lineHeight = '40px'
+  forceWalletUpdateButton.style.color = 'white'
+  forceWalletUpdateButton.style.cursor = 'pointer'
+
+  forceWalletUpdateButton.addEventListener('click', () => {
+    updateWalletData()
+  })
+
+  topBar.appendChild(forceWalletUpdateButton)
+}
+
+function observeUrlChange() {
+  let lastUrl = location.href
+
+  new MutationObserver(() => {
+    const url = location.href
+    if (url !== lastUrl) {
+      lastUrl = url
+      onUrlChange()
+    }
+  }).observe(document, { subtree: true, childList: true })
+
+  function onUrlChange() {
+    waitAsyncPageLoad()
+  }
+}
+
+function waitAsyncPageLoad() {
+  if (window.location.href === 'https://bitclout.com/wallet') {
+    let detectionElement = document.getElementsByClassName(
+      'global__center__inner'
+    )
+
+    if (detectionElement != null && detectionElement.length > 0) {
+      addForceWalletUpdateButton()
+      updateWalletData()
+      pageLoaded = true
+    } else {
+      setTimeout(() => {
+        waitAsyncPageLoad()
+      }, 1000)
+    }
+  } else {
+  }
+}
+
+observeUrlChange()
+waitAsyncPageLoad()

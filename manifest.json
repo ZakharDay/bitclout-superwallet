@@ -1,8 +1,15 @@
 {
   "name": "BitClout SuperWallet",
   "description": "Updates your BitClout wallet",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "manifest_version": 3,
+  "content_scripts": [
+    {
+      "matches": ["https://*.bitclout.com/*"],
+      "js": ["autoload.js"],
+      "run_at": "document_end"
+    }
+  ],
   "permissions": ["storage", "activeTab", "scripting"],
   "action": {
     "default_popup": "popup.html",
