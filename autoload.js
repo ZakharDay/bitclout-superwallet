@@ -386,9 +386,12 @@ function addFounderRewardPercentage(creatorData) {
 
 function updateProfile(data) {
   let creatorData = mergePortfolioItemData({}, data, publicKey, bitCloutPrice)
+  let detectionElement = document.getElementsByClassName('gitCloutPulseLink')
 
-  addGitCloutPulseLinkToProfile(creatorData)
-  addFounderRewardPercentage(creatorData)
+  if (detectionElement.length == 0) {
+    addGitCloutPulseLinkToProfile(creatorData)
+    addFounderRewardPercentage(creatorData)
+  }
 }
 
 function calcRealCoinPrice(portfolioItem, bitCloutPrice) {
