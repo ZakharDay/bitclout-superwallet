@@ -1,3 +1,7 @@
+// prettier-ignore
+const buyOrSellUrl = 'https://api.bitclout.com/buy-or-sell-creator-coin-preview-WVAzTWpGOFFnMlBvWXZhTFA4NjNSZGNW'
+const getProfilesUrl = 'https://api.bitclout.com/get-profiles'
+
 const floatNumberPattern = /[-+]?[0-9]*\.?[0-9]+/g
 let pageLoaded = false
 let pageUpdated = false
@@ -159,15 +163,15 @@ function prepareForNextDataLoad() {
   }
 }
 
-function getUsersData() {
+function getCreatorsData() {
   let newPortfolio = []
 
   portfolio.forEach((portfolioItem, i) => {
-    getUserData(portfolioItem.username, publicKey, 'wallet')
+    getCreatorCoinData(portfolioItem.username, publicKey, 'wallet')
   })
 }
 
-function getUserData(username, publicKey, context) {
+function getCreatorCoinData(username, publicKey, context) {
   const parser = new DOMParser()
 
   const data = {
@@ -185,8 +189,9 @@ function getUserData(username, publicKey, context) {
 
   clearCoinPriceCells()
   clearSharePriceInUsdCells()
+  clearSharePriceInBitCloutCells()
 
-  fetch('https://api.bitclout.com/get-profiles', {
+  fetch(getProfilesUrl, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -207,6 +212,44 @@ function getUserData(username, publicKey, context) {
     })
 }
 
+function getCreatorCoinBuyOrSellData(creatorData) {
+  const parser = new DOMParser()
+
+  const data = {
+    BitCloutToAddNanos: 0,
+    BitCloutToSellNanos: 0,
+    Broadcast: false,
+    CreatorCoinToSellNanos: creatorData.holderBalanceNanos,
+    CreatorPublicKeyBase58Check: creatorData.publicKey,
+    MinBitCloutExpectedNanos: 0,
+    MinCreatorCoinExpectedNanos: 0,
+    MinFeeRateNanosPerKB: 1000,
+    OperationType: 'sell',
+    SeedInfo: null,
+    Sign: false,
+    UpdaterPublicKeyBase58Check: publicKey,
+    Validate: false
+  }
+
+  fetch(buyOrSellUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    credentials: 'include',
+    body: JSON.stringify(data)
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      updateSharePriceInUsdCell(creatorData.username, data)
+      updateSharePriceInBitCloutCell(creatorData.username, data)
+      // console.log('Success:', data)
+    })
+    .catch((error) => {
+      console.error('Error:', error)
+    })
+}
+
 function clearCoinPriceCells() {
   let coinPriceCells = document.getElementsByClassName('coinPriceCell')
 
@@ -216,10 +259,18 @@ function clearCoinPriceCells() {
 }
 
 function clearSharePriceInUsdCells() {
-  let sharePriceInUsdCells = document.getElementsByClassName('assetsInUsdCell')
+  let elements = document.getElementsByClassName('assetsInUsdCell')
 
-  for (let sharePriceInUsdCell of sharePriceInUsdCells) {
-    sharePriceInUsdCell.innerHTML = '–'
+  for (let element of elements) {
+    element.innerHTML = '–'
+  }
+}
+
+function clearSharePriceInBitCloutCells() {
+  let elements = document.getElementsByClassName('assetsInBitCloutCell')
+
+  for (let element of elements) {
+    element.innerHTML = '–'
   }
 }
 
@@ -242,8 +293,8 @@ function updatePortfolioItemData(data) {
 
       updateNameCell(newPortfolioItem)
       updateCoinPriceCell(newPortfolioItem, realCoinPrice)
-      updateSharePriceInUsdCell(newPortfolioItem)
-      updateShareCell(newPortfolioItem)
+      // updateSharePriceInUsdCell(newPortfolioItem)
+      // updateShareCell(newPortfolioItem)
       addGitCloutPulseLink(newPortfolioItem)
 
       newPortfolio.push(newPortfolioItem)
@@ -263,27 +314,31 @@ function updateCoinPriceCell(portfolioItem, realCoinPrice) {
   element.innerText = ['$', realCoinPrice].join('')
 }
 
-function updateSharePriceInUsdCell(portfolioItem) {
-  let { portfolioItemPriceInUsd } = portfolioItem.holderEntry
+// function updateSharePriceInUsdCell(portfolioItem) {
+//   let { portfolioItemPriceInUsd } = portfolioItem.holderEntry
+//
+//   let element = document.querySelector(
+//     `#${portfolioItem.username} .assetsInUsdCell`
+//   )
+//
+//   sharePriceInUsd = portfolioItemPriceInUsd.toLocaleString(undefined, {
+//     maximumFractionDigits: 2,
+//     minimumFractionDigits: 2
+//   })
+//
+//   element.innerText = ['$', sharePriceInUsd].join('')
+// }
 
-  let element = document.querySelector(
-    `#${portfolioItem.username} .assetsInUsdCell`
-  )
-
-  sharePriceInUsd = portfolioItemPriceInUsd.toLocaleString(undefined, {
-    maximumFractionDigits: 2,
-    minimumFractionDigits: 2
-  })
-
-  element.innerText = ['$', sharePriceInUsd].join('')
+function updateSharePriceInUsdCell(username, buyAndSellData) {
+  let element = document.querySelector(`#${username} .assetsInUsdCell`)
+  element.innerText = calcAndFormatPortfolioItemPriceInUsd(buyAndSellData)
 }
 
-function updateSharePriceInBitCloutCell(portfolioItem) {
-  let element = document.querySelector(
-    `#${portfolioItem.username} .assetsInBitCloutCell`
-  )
+function updateSharePriceInBitCloutCell(username, buyAndSellData) {
+  let element = document.querySelector(`#${username} .assetsInBitCloutCell`)
+  let sharePriceInBitClout = buyAndSellData['ExpectedBitCloutReturnedNanos']
 
-  element.innerText = portfolioItem.holderEntry.portfolioItemShare
+  element.innerText = [sharePriceInBitClout / 1000000000, 'BC'].join(' ')
 }
 
 function updateShareCell(portfolioItem) {
@@ -352,21 +407,39 @@ function calcAndFormatRealCoinPrice(portfolioItem, bitCloutPrice) {
 }
 
 function calcFounderRewardPercentage(portfolioItem) {
-  return portfolioItem['coinEntry']['creatorBasisPoints'] / 100 + '%'
+  return portfolioItem.coinEntry.creatorBasisPoints / 100 + '%'
 }
 
 function calcPortfolioItemShare(userThatHODL) {
   return userThatHODL['BalanceNanos'] / 1000000000
 }
 
-function calcPortfolioItemPriceInUsd(
-  newPortfolioItem,
-  bitCloutPrice,
-  userThatHODL
-) {
+// function calcPortfolioItemPriceInUsd(
+//   newPortfolioItem,
+//   bitCloutPrice,
+//   userThatHODL
+// ) {
+//   return (
+//     calcPortfolioItemShare(userThatHODL) *
+//     calcRealCoinPrice(newPortfolioItem, bitCloutPrice)
+//   )
+// }
+
+function calcAndFormatPortfolioItemPriceInUsd(buyAndSellData) {
+  let sharePriceInUsd = calcPortfolioItemPriceInUsd(buyAndSellData)
+
+  sharePriceInUsd = sharePriceInUsd.toLocaleString(undefined, {
+    maximumFractionDigits: 2,
+    minimumFractionDigits: 2
+  })
+
+  return ['$', sharePriceInUsd].join('')
+}
+
+function calcPortfolioItemPriceInUsd(buyAndSellData) {
   return (
-    calcPortfolioItemShare(userThatHODL) *
-    calcRealCoinPrice(newPortfolioItem, bitCloutPrice)
+    (buyAndSellData['ExpectedBitCloutReturnedNanos'] / 1000000000) *
+    bitCloutPrice
   )
 }
 
@@ -436,38 +509,27 @@ function addGitCloutPulseLinkToProfile(creatorData) {
 
 function mergePortfolioItemData(portfolioItem, data, publicKey, bitCloutPrice) {
   let newPortfolioItem = Object.assign({}, portfolioItem)
+  let creator = data['ProfilesFound'][0]
+  let coinEntry = creator['CoinEntry']
 
-  newPortfolioItem.publicKey = data['ProfilesFound'][0]['PublicKeyBase58Check']
-  newPortfolioItem.isVerified = data['ProfilesFound'][0]['IsVerified']
+  // prettier-ignore
+  newPortfolioItem.stakeMultipleBasisPoints = creator['StakeMultipleBasisPoints']
+  newPortfolioItem.publicKey = creator['PublicKeyBase58Check']
+  newPortfolioItem.isVerified = creator['IsVerified']
+  newPortfolioItem.coinPriceBitCloutNanos = creator['CoinPriceBitCloutNanos']
 
   newPortfolioItem.coinEntry = {
-    creatorBasisPoints:
-      data['ProfilesFound'][0]['CoinEntry']['CreatorBasisPoints'],
-    bitCloutLockedNanos:
-      data['ProfilesFound'][0]['CoinEntry']['BitCloutLockedNanos'],
-    coinsInCirculationNanos:
-      data['ProfilesFound'][0]['CoinEntry']['CoinsInCirculationNanos'],
-    coinWatermarkNanos:
-      data['ProfilesFound'][0]['CoinEntry']['CoinWatermarkNanos']
+    creatorBasisPoints: coinEntry['CreatorBasisPoints'],
+    bitCloutLockedNanos: coinEntry['BitCloutLockedNanos'],
+    coinsInCirculationNanos: coinEntry['CoinsInCirculationNanos'],
+    coinWatermarkNanos: coinEntry['CoinWatermarkNanos']
   }
-
-  newPortfolioItem.coinPriceBitCloutNanos =
-    data['ProfilesFound'][0]['CoinPriceBitCloutNanos']
-
-  newPortfolioItem.stakeMultipleBasisPoints =
-    data['ProfilesFound'][0]['StakeMultipleBasisPoints']
 
   data['ProfilesFound'][0]['UsersThatHODL'].forEach((userThatHODL, i) => {
     if (publicKey === userThatHODL['HODLerPublicKeyBase58Check']) {
-      newPortfolioItem.holderEntry = {
-        balanceNanos: userThatHODL['BalanceNanos'],
-        portfolioItemShare: calcPortfolioItemShare(userThatHODL),
-        portfolioItemPriceInUsd: calcPortfolioItemPriceInUsd(
-          newPortfolioItem,
-          bitCloutPrice,
-          userThatHODL
-        )
-      }
+      newPortfolioItem.holderBalanceNanos = userThatHODL['BalanceNanos']
+
+      getCreatorCoinBuyOrSellData(newPortfolioItem)
     }
   })
 
@@ -477,7 +539,7 @@ function mergePortfolioItemData(portfolioItem, data, publicKey, bitCloutPrice) {
 function updateWalletData() {
   getWalletData()
     .then(() => prepareForNextDataLoad())
-    .then(() => getUsersData())
+    .then(() => getCreatorsData())
 }
 
 function addForceWalletUpdateButton() {
@@ -540,7 +602,7 @@ function waitAsyncPageLoad() {
 
         if (urlLastPart != 'buy' && urlLastPart != 'sell') {
           username = pathname.substr(3)
-          getUserData(username, '', 'profile')
+          getCreatorCoinData(username, '', 'profile')
         }
       }
     } else {
