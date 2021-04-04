@@ -522,8 +522,8 @@ function observeUrlChange() {
 }
 
 function waitAsyncPageLoad() {
-  let url = window.location.href
-  let urlPart = url.substr(21)
+  let pathname = window.location.pathname
+  let urlPart = pathname.substr(1)
   let urlPartFirstLetter = urlPart.charAt(0)
 
   if (urlPartFirstLetter === 'w' || urlPartFirstLetter === 'u') {
@@ -539,7 +539,7 @@ function waitAsyncPageLoad() {
         let urlLastPart = urlPart.substr(urlPart.lastIndexOf('/') + 1)
 
         if (urlLastPart != 'buy' && urlLastPart != 'sell') {
-          username = url.substr(23)
+          username = pathname.substr(3)
           getUserData(username, '', 'profile')
         }
       }
