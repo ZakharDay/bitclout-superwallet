@@ -14,6 +14,7 @@ While BitClout now have a delay in updates of creator coin prices on your wallet
 - adds a link to creator's analytics page on the BitCloutPulse
 - adds the creator's founder reward percentage
 - adds a button to force update wallet data
+- adds a list of chosen creators to sidebar with their coin price and founder reward percentage
 
 ### Profile page
 
@@ -26,11 +27,11 @@ The extension doesn't collect any of your information. Extension just takes the 
 
 ## Get the extension from Chrome Web Store
 
-The extension v0.1.0 has been published and could be installed https://chrome.google.com/webstore/detail/bitclout-superwallet/jkkmfkgfgmhegdbcaahpppjndaiidbjd
+The extension v0.2.0 has been published and could be installed https://chrome.google.com/webstore/detail/bitclout-superwallet/jkkmfkgfgmhegdbcaahpppjndaiidbjd
 
 ## Development
 
-Current version is 0.3.0. You could read on how to add this unpacked extension to Google Chrome here https://developer.chrome.com/docs/extensions/mv3/getstarted/
+Current version is 0.4.0. You could read on how to add this unpacked extension to Google Chrome here https://developer.chrome.com/docs/extensions/mv3/getstarted/
 
 ## Support
 
