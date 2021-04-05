@@ -213,7 +213,7 @@ function getCreatorCoinData(username, publicKey, context) {
     })
 }
 
-function getSidebarCreatorCoinData(username, publicKey) {
+function getSidebarCreatorCoinData(username, publicKey, order) {
   const parser = new DOMParser()
 
   const data = {
@@ -238,7 +238,7 @@ function getSidebarCreatorCoinData(username, publicKey) {
   })
     .then((response) => response.json())
     .then((data) => {
-      updateSidebar(data)
+      updateSidebar(data, order)
       // console.log('Success:', data)
     })
     .catch((error) => {
@@ -411,7 +411,7 @@ function updateProfile(data) {
   }
 }
 
-function updateSidebar(data) {
+function updateSidebar(data, order) {
   let creator = data['ProfilesFound'][0]
   let username = creator['Username']
   let coinEntry = creator['CoinEntry']
@@ -420,9 +420,11 @@ function updateSidebar(data) {
   let sidebarItem = mergePortfolioItemData({}, data, publicKey, bitCloutPrice)
   let creatorCoinPrice = calcAndFormatRealCoinPrice(sidebarItem, bitCloutPrice)
 
-  wrapper.style.display = 'block'
+  wrapper.style.display = 'flex'
   wrapper.style.margin = '0 0 20px'
+  wrapper.style.setProperty('flex-direction', 'column')
   creatorListItemElement.href = `https://bitclout.com/u/${username}`
+  creatorListItemElement.style.order = `${order}`
   creatorListItemElement.childNodes[0].style.backgroundImage = `url("${creator['ProfilePic']}")`
 
   creatorListItemElement.childNodes[1].childNodes[0].innerHTML = [
@@ -599,7 +601,7 @@ function trackCreators(creatorList) {
   heading.parentNode.insertBefore(wrapperClone, heading)
 
   creatorList.forEach((creatorListItem, i) => {
-    getSidebarCreatorCoinData(creatorListItem, publicKey)
+    getSidebarCreatorCoinData(creatorListItem, publicKey, i)
   })
 }
 
