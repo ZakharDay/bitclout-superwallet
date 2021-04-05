@@ -8,6 +8,7 @@ let pageUpdated = false
 let publicKey = ''
 let bitCloutPrice = 0
 let portfolio = []
+let sidebarCreatorListItemElement
 
 async function getWalletData() {
   let loadingDetectionElement = document.querySelector('.coinPriceCell')
@@ -212,6 +213,39 @@ function getCreatorCoinData(username, publicKey, context) {
     })
 }
 
+function getSidebarCreatorCoinData(username, publicKey) {
+  const parser = new DOMParser()
+
+  const data = {
+    AddGlobalFeedBool: false,
+    Description: '',
+    FetchUsersThatHODL: true,
+    ModerationType: '',
+    NumToFetch: 1,
+    OrderBy: 'newest_last_post',
+    PublicKeyBase58Check: '',
+    ReaderPublicKeyBase58Check: publicKey,
+    Username: username,
+    UsernamePrefix: ''
+  }
+
+  fetch(getProfilesUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(data)
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      updateSidebar(data)
+      // console.log('Success:', data)
+    })
+    .catch((error) => {
+      console.error('Error:', error)
+    })
+}
+
 function getCreatorCoinBuyOrSellData(creatorData) {
   const parser = new DOMParser()
 
@@ -293,8 +327,6 @@ function updatePortfolioItemData(data) {
 
       updateNameCell(newPortfolioItem)
       updateCoinPriceCell(newPortfolioItem, realCoinPrice)
-      // updateSharePriceInUsdCell(newPortfolioItem)
-      // updateShareCell(newPortfolioItem)
       addGitCloutPulseLink(newPortfolioItem)
 
       newPortfolio.push(newPortfolioItem)
@@ -313,21 +345,6 @@ function updateCoinPriceCell(portfolioItem, realCoinPrice) {
 
   element.innerText = ['$', realCoinPrice].join('')
 }
-
-// function updateSharePriceInUsdCell(portfolioItem) {
-//   let { portfolioItemPriceInUsd } = portfolioItem.holderEntry
-//
-//   let element = document.querySelector(
-//     `#${portfolioItem.username} .assetsInUsdCell`
-//   )
-//
-//   sharePriceInUsd = portfolioItemPriceInUsd.toLocaleString(undefined, {
-//     maximumFractionDigits: 2,
-//     minimumFractionDigits: 2
-//   })
-//
-//   element.innerText = ['$', sharePriceInUsd].join('')
-// }
 
 function updateSharePriceInUsdCell(username, buyAndSellData) {
   let element = document.querySelector(`#${username} .assetsInUsdCell`)
@@ -394,6 +411,33 @@ function updateProfile(data) {
   }
 }
 
+function updateSidebar(data) {
+  let creator = data['ProfilesFound'][0]
+  let username = creator['Username']
+  let coinEntry = creator['CoinEntry']
+  let wrapper = document.getElementsByClassName('sidebarCreatorList')[0]
+  let creatorListItemElement = sidebarCreatorListItemElement.cloneNode(true)
+  let sidebarItem = mergePortfolioItemData({}, data, publicKey, bitCloutPrice)
+  let creatorCoinPrice = calcAndFormatRealCoinPrice(sidebarItem, bitCloutPrice)
+
+  wrapper.style.display = 'block'
+  wrapper.style.margin = '0 0 20px'
+  creatorListItemElement.href = `https://bitclout.com/u/${username}`
+  creatorListItemElement.childNodes[0].style.backgroundImage = `url("${creator['ProfilePic']}")`
+
+  creatorListItemElement.childNodes[1].childNodes[0].innerHTML = [
+    username,
+    calcFounderRewardPercentage(sidebarItem)
+  ].join(' ')
+
+  creatorListItemElement.childNodes[1].childNodes[1].innerHTML = ''
+  creatorListItemElement.childNodes[2].innerText = ['$', creatorCoinPrice].join(
+    ''
+  )
+
+  wrapper.appendChild(creatorListItemElement)
+}
+
 function calcRealCoinPrice(portfolioItem, bitCloutPrice) {
   return (portfolioItem.coinPriceBitCloutNanos * bitCloutPrice) / 1000000000
 }
@@ -416,17 +460,6 @@ function calcFounderRewardPercentage(portfolioItem) {
 function calcPortfolioItemShare(userThatHODL) {
   return userThatHODL['BalanceNanos'] / 1000000000
 }
-
-// function calcPortfolioItemPriceInUsd(
-//   newPortfolioItem,
-//   bitCloutPrice,
-//   userThatHODL
-// ) {
-//   return (
-//     calcPortfolioItemShare(userThatHODL) *
-//     calcRealCoinPrice(newPortfolioItem, bitCloutPrice)
-//   )
-// }
 
 function calcAndFormatPortfolioItemPriceInUsd(buyAndSellData) {
   let sharePriceInUsd = calcPortfolioItemPriceInUsd(buyAndSellData)
@@ -539,6 +572,61 @@ function mergePortfolioItemData(portfolioItem, data, publicKey, bitCloutPrice) {
   return newPortfolioItem
 }
 
+function trackCreators(creatorList) {
+  let heading = document.querySelector(
+    '.global__sidebar__inner .fs-15px.text-grey5.font-weight-bold.mb-15px'
+  )
+
+  let wrapper = document.getElementsByTagName(
+    'right-bar-creators-leaderboard'
+  )[0]
+
+  let headingClone = heading.cloneNode(true)
+  headingClone.innerHTML = 'Creators'
+
+  let wrapperClone = wrapper.cloneNode(true)
+  wrapperClone.classList.add('sidebarCreatorList')
+  wrapperClone.style.marginBottom = '20px'
+
+  sidebarCreatorListItemElement = wrapperClone.childNodes[0]
+  sidebarCreatorListItemElement.href = ''
+  sidebarCreatorListItemElement.classList.add('creatorListItem')
+  sidebarCreatorListItemElement.childNodes[0].style.backgroundImage = ''
+
+  wrapperClone.innerHTML = ''
+
+  heading.parentNode.insertBefore(headingClone, heading)
+  heading.parentNode.insertBefore(wrapperClone, heading)
+
+  creatorList.forEach((creatorListItem, i) => {
+    getSidebarCreatorCoinData(creatorListItem, publicKey)
+  })
+}
+
+function autoTrackCreators() {
+  let detectionElement = document.getElementsByTagName(
+    'right-bar-creators-leaderboard'
+  )
+
+  if (
+    detectionElement != null &&
+    detectionElement.length > 0 &&
+    detectionElement[0].childNodes.length > 1
+  ) {
+    chrome.storage.sync.get('creatorList', ({ creatorList }) => {
+      console.log(creatorList, creatorList.length)
+
+      if (creatorList.length > 0 && creatorList[0] != '') {
+        trackCreators(creatorList)
+      }
+    })
+  } else {
+    setTimeout(() => {
+      autoTrackCreators()
+    }, 1000)
+  }
+}
+
 function updateWalletData() {
   getWalletData()
     .then(() => prepareForNextDataLoad())
@@ -600,6 +688,7 @@ function waitAsyncPageLoad() {
       if (urlPartFirstLetter === 'w') {
         addForceWalletUpdateButton()
         updateWalletData()
+        autoTrackCreators()
       } else if (urlPartFirstLetter === 'u') {
         let urlLastPart = urlPart.substr(urlPart.lastIndexOf('/') + 1)
 

@@ -1,0 +1,34 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  padding: 10px;
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 16px;
+}
+
+label {
+  display: block;
+  padding: 10px 0 12px;
+}
+
+#creatorListTextarea {
+  width: 300px;
+  height: 300px;
+  padding: 10px;
+  margin-bottom: 10px;
+  resize: none;
+  font-family: Helvetica, Arial, sans-serif;
+}
+
+#trackCreatorsButton {
+  width: 200px;
+  height: 50px;
+  line-height: 50px;
+  color: white;
+  text-align: center;
+  background: #005bff;
+  cursor: pointer;
+  user-select: none;
+}
