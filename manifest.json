@@ -1,7 +1,7 @@
 {
   "name": "BitClout SuperWallet",
   "description": "Updates your BitClout wallet",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "manifest_version": 3,
   "content_scripts": [
     {
