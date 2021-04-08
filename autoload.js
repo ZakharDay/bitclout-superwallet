@@ -1,6 +1,7 @@
 // prettier-ignore
 const buyOrSellUrl = 'https://api.bitclout.com/buy-or-sell-creator-coin-preview-WVAzTWpGOFFnMlBvWXZhTFA4NjNSZGNW'
 const getProfilesUrl = 'https://api.bitclout.com/get-profiles'
+const getFollowsStateless = 'https://api.bitclout.com/get-follows-stateless'
 
 const floatNumberPattern = /[-+]?[0-9]*\.?[0-9]+/g
 let pageLoaded = false
@@ -283,6 +284,198 @@ function getCreatorCoinBuyOrSellData(creatorData) {
       console.error('Error:', error)
     })
 }
+
+let following = []
+let counter = 1
+
+function getCreatorFollowing(nextPublicKey) {
+  const parser = new DOMParser()
+
+  // const data = {
+  //   AddGlobalFeedBool: false,
+  //   Description: '',
+  //   FetchUsersThatHODL: true,
+  //   ModerationType: '',
+  //   NumToFetch: 1,
+  //   OrderBy: 'newest_last_post',
+  //   PublicKeyBase58Check: '',
+  //   ReaderPublicKeyBase58Check: '',
+  //   Username: 'alisher/followers',
+  //   UsernamePrefix: ''
+  // }
+
+  // How to get all BitClout users
+  // const data = {
+  //   AddGlobalFeedBool: false,
+  //   Description: null,
+  //   FetchUsersThatHODL: false,
+  //   ModerationType: 'leaderboard',
+  //   NumToFetch: 1000000000,
+  //   OrderBy: 'influencer_coin_price',
+  //   PublicKeyBase58Check: null,
+  //   ReaderPublicKeyBase58Check:
+  //     'BC1YLgeXsafJ8vYcXurRMLy5UcYGbLtjnoXZZWZLuXJqbDVQqXAE6mf',
+  //   Username: null,
+  //   UsernamePrefix: null
+  // }
+
+  // PublicKeyBase58Check: "BC1YLjFkqyQXWE63NXyHFgiYn1QYG4V64kVQY9sTcBop2eVjhkAwGn8"
+  // PublicKeyBase58Check: "BC1YLgjVzPgGGB7Lk5Lj1Rpjs8oZ9qUbR3D6aqSmhmCBYj3zVTUV4Dt"
+  // PublicKeyBase58Check: "BC1YLhFt7Ky6i5Ss3N66tGMnCKbCkqFNB3WsRmgjH45Y1tkuiYWsZim"
+  // PublicKeyBase58Check: "BC1YLj3wnLb9Wizoz1YKNUKhXcAfvMZwwVzYDn9MtEZ1EftEhBjGGpk"
+  // PublicKeyBase58Check: "BC1YLgXzhUL4aZQhbB42zbFhQMoZV3gwXrbKXBu57bLaCSQn5MPAHLc"
+  // PublicKeyBase58Check: "BC1YLgik3qTQfkn51dtbFuey7McxU1AgDQ1AAWnikA5rxL3aLCf98rF"
+  // PublicKeyBase58Check: "BC1YLhVsxyDjJG3rQhFDUaCEdqiyaCwYmVDc5iEUUEN3QiH2eDq2d9k"
+  // PublicKeyBase58Check: "BC1YLjGsc25NSHF87ejYtN4ht7X2o5bYLeybFkkcegYc6nDhHwv6mZg"
+
+  // True/false is changing followers/following
+  // const data = {
+  //   PublicKeyBase58Check: nextPublicKey,
+  //   getEntriesFollowingPublicKey: false,
+  //   username: 'zakharday'
+  // }
+
+  // const data = {
+  //   PublicKeysBase58Check: [
+  //     'BC1YLgeXsafJ8vYcXurRMLy5UcYGbLtjnoXZZWZLuXJqbDVQqXAE6mf'
+  //   ]
+  // }
+
+  const data = {
+    FetchStartIndex: -1,
+    NumToFetch: 100,
+    PublicKeyBase58Check:
+      'BC1YLgTwjbHjy8rLPWZHX53JMmreo5u3sxX5BvdASugUyUaMZdo51oh'
+  }
+
+  let getUsersStateless = 'https://api.bitclout.com/get-users-stateless'
+  let getNotifications = 'https://api.bitclout.com/get-notifications'
+
+  fetch(getNotifications, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'content-length': 87
+    },
+    body: JSON.stringify(data)
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      console.log('Success:', data)
+      renderNotifications(data)
+      // following.push(data['ProfilesFound'])
+      // console.log(following)
+
+      // if (data['NextPublicKey'] != '' && counter < 10) {
+      //   getCreatorFollowing(data['NextPublicKey'])
+      //   counter = counter + 1
+      // }
+    })
+    .catch((error) => {
+      console.error('Error:', error)
+    })
+}
+
+function renderNotifications(data) {
+  const wrapper = document.getElementsByClassName('global__center__inner')[0]
+  const notifications = data['Notifications']
+  const profiles = data['ProfilesByPublicKey']
+  const posts = data['PostsByHash']
+
+  console.log(notifications, profiles, posts)
+
+  notifications.forEach((notification, i) => {
+    const metadata = notification['Metadata']
+    const userPublicKey = metadata['TransactorPublicKeyBase58Check']
+    const type = metadata['TxnType']
+    let div = document.createElement('div')
+
+    if (type === 'FOLLOW') {
+      Object.keys(profiles).forEach((key, i) => {
+        if (key === userPublicKey) {
+          div.innerHTML = `<a href='https://bitclout.com/u/${profiles[key]['Username']}'>${profiles[key]['Username']}</a> followed you`
+        }
+      })
+    } else if (type === 'LIKE') {
+      const postHash = metadata['LikeTxindexMetadata']['PostHashHex']
+      let post = {}
+
+      Object.keys(posts).forEach((key, i) => {
+        if (key === postHash) {
+          post = posts[key]
+        }
+      })
+
+      Object.keys(profiles).forEach((key, i) => {
+        if (key === userPublicKey) {
+          div.innerHTML = `<a href='https://bitclout.com/u/${
+            profiles[key]['PublicKeyBase58Check']
+          }'>${profiles[key]['Username']}</a> liked your post "${post[
+            'Body'
+          ].slice(0, 50)}"`
+        }
+      })
+    } else if (type === 'SUBMIT_POST') {
+      const postHash =
+        metadata['SubmitPostTxindexMetadata']['PostHashBeingModifiedHex']
+      const parentPostHash =
+        metadata['SubmitPostTxindexMetadata']['ParentPostHashHex']
+      let post = {}
+      let parentPost = {}
+
+      Object.keys(posts).forEach((key, i) => {
+        if (key === postHash) {
+          post = posts[key]
+        } else if (key === parentPostHash) {
+          parentPost = posts[key]
+        }
+      })
+
+      Object.keys(profiles).forEach((key, i) => {
+        if (key === userPublicKey) {
+          let postElement = document.createElement('a')
+          postElement.href = `https://bitclout.com/posts/${post['PostHashHex']}`
+          postElement.innerText = post['Body'].slice(0, 50)
+
+          let postAuthorLink = document.createElement('a')
+          postAuthorLink.href = `https://bitclout.com/u/${profiles[key]['Username']}`
+          postAuthorLink.innerText = `@${profiles[key]['Username']} just posted the post`
+
+          div.appendChild(postAuthorLink)
+          div.appendChild(postElement)
+        }
+      })
+    } else if (type === 'CREATOR_COIN') {
+      const operationType =
+        metadata['CreatorCoinTxindexMetadata']['OperationType']
+      const quantity =
+        metadata['CreatorCoinTxindexMetadata']['BitCloutToSellNanos']
+
+      Object.keys(profiles).forEach((key, i) => {
+        if (key === userPublicKey) {
+          div.innerHTML = `<a href='https://bitclout.com/u/${profiles[key]['PublicKeyBase58Check']}'>${profiles[key]['Username']}</a> bought ~${quantity} worth of your creator coin`
+        }
+      })
+    }
+
+    wrapper.appendChild(div)
+  })
+}
+
+// PublicKeyBase58Check: ""
+// getEntriesFollowingPublicKey: false
+// username: "zakharday"
+//
+// AddGlobalFeedBool: false
+// Description: null
+// FetchUsersThatHODL: false
+// ModerationType: "leaderboard"
+// NumToFetch: 10
+// OrderBy: "influencer_coin_price"
+// PublicKeyBase58Check: null
+// ReaderPublicKeyBase58Check: "BC1YLgeXsafJ8vYcXurRMLy5UcYGbLtjnoXZZWZLuXJqbDVQqXAE6mf"
+// Username: null
+// UsernamePrefix: null
 
 function clearCoinPriceCells() {
   let coinPriceCells = document.getElementsByClassName('coinPriceCell')
@@ -677,11 +870,12 @@ function observeUrlChange() {
 }
 
 function waitAsyncPageLoad() {
-  let pathname = window.location.pathname
-  let urlPart = pathname.substr(1)
-  let urlPartFirstLetter = urlPart.charAt(0)
+  const pathname = window.location.pathname
+  const urlPart = pathname.substr(1)
+  const urlPartFirstLetter = urlPart.charAt(0)
+  const firstLettersAccepted = ['w', 'u', 'n']
 
-  if (urlPartFirstLetter === 'w' || urlPartFirstLetter === 'u') {
+  if (firstLettersAccepted.includes(urlPartFirstLetter)) {
     let detectionElement = document.getElementsByClassName(
       'global__center__inner'
     )
@@ -698,6 +892,17 @@ function waitAsyncPageLoad() {
           username = pathname.substr(3)
           getCreatorCoinData(username, '', 'profile')
         }
+      } else if (urlPartFirstLetter === 'n') {
+        // getCreatorFollowing('')
+        const wrapper = document.getElementsByClassName(
+          'global__center__inner'
+        )[0]
+
+        // wrapper.style.paddingBottom = '100px'
+
+        let div = document.createElement('div')
+        div.style.height = '100px'
+        wrapper.appendChild(div)
       }
     } else {
       setTimeout(() => {

@@ -19,7 +19,6 @@ trackCreatorsButton.addEventListener('click', async () => {
 
   chrome.scripting.executeScript({
     target: { tabId: tab.id },
-    // function: trackCreatorsInjected
     function: pageReload
   })
 })
