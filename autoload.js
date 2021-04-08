@@ -462,21 +462,6 @@ function renderNotifications(data) {
   })
 }
 
-// PublicKeyBase58Check: ""
-// getEntriesFollowingPublicKey: false
-// username: "zakharday"
-//
-// AddGlobalFeedBool: false
-// Description: null
-// FetchUsersThatHODL: false
-// ModerationType: "leaderboard"
-// NumToFetch: 10
-// OrderBy: "influencer_coin_price"
-// PublicKeyBase58Check: null
-// ReaderPublicKeyBase58Check: "BC1YLgeXsafJ8vYcXurRMLy5UcYGbLtjnoXZZWZLuXJqbDVQqXAE6mf"
-// Username: null
-// UsernamePrefix: null
-
 function clearCoinPriceCells() {
   let coinPriceCells = document.getElementsByClassName('coinPriceCell')
 
@@ -894,15 +879,7 @@ function waitAsyncPageLoad() {
         }
       } else if (urlPartFirstLetter === 'n') {
         // getCreatorFollowing('')
-        const wrapper = document.getElementsByClassName(
-          'global__center__inner'
-        )[0]
-
-        // wrapper.style.paddingBottom = '100px'
-
-        let div = document.createElement('div')
-        div.style.height = '100px'
-        wrapper.appendChild(div)
+        stupidFixForNotificationsFeed()
       }
     } else {
       setTimeout(() => {
