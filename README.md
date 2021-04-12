@@ -35,4 +35,7 @@ Current version is 0.4.0. You could read on how to add this unpacked extension t
 
 ## Support
 
-If you want to say hi, text ([@zakharday](https://bitclout.com/u/zakharday)). My public key is BC1YLgeXsafJ8vYcXurRMLy5UcYGbLtjnoXZZWZLuXJqbDVQqXAE6mf
+If you want to say hi to the developer, text ([@zakharday](https://bitclout.com/u/zakharday)). My public key is BC1YLgeXsafJ8vYcXurRMLy5UcYGbLtjnoXZZWZLuXJqbDVQqXAE6mf
+
+Follow our [official SuperWallet account](https://bitclout.com/u/SuperWallet). Our public key is BC1YLgTwjbHjy8rLPWZHX53JMmreo5u3sxX5BvdASugUyUaMZdo51oh
+
