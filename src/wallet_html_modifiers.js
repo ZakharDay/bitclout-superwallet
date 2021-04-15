@@ -316,7 +316,6 @@ function moveHtmlWalletPortfolioOldCoinPrice() {
 
 function updateHtmlWalletPortfolioItemNameCell(item) {
   let element = document.querySelector(`#${item.username} .creatorNameCell`)
-  console.log(element)
 
   if (
     item.coinEntry != undefined &&
