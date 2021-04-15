@@ -1,2 +1,4 @@
 .DS_Store
 /server_response
+/node_modules
+/dist/superwallet.js

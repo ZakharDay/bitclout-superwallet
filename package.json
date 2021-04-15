@@ -1,0 +1,27 @@
+{
+  "name": "bitclout-superwallet",
+  "version": "0.6.0",
+  "description": "Chrome extension that Updates your BitClout wallet",
+  "private": true,
+  "scripts": {
+    "start": "webpack serve --open --config webpack.dev.js",
+    "watch": "webpack --config webpack.dev.js",
+    "build": "webpack --config webpack.prod.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ZakharDay/bitclout-superwallet.git"
+  },
+  "keywords": [],
+  "author": "Zakhar Day",
+  "license": "",
+  "bugs": {
+    "url": "https://github.com/ZakharDay/bitclout-superwallet/issues"
+  },
+  "homepage": "https://github.com/ZakharDay/bitclout-superwallet#readme",
+  "devDependencies": {
+    "webpack-cli": "^4.6.0",
+    "webpack-dev-server": "^3.11.2",
+    "webpack-merge": "^5.7.3"
+  }
+}
