@@ -42,6 +42,15 @@ function calcAndFormatPortfolioItemPriceInUsd(nanos) {
   return ['$', sharePriceInUsd].join('')
 }
 
+function calcAndFormatPortfolioItemPriceInBitClout(nanos) {
+  const formatted = (nanos / 1000000000).toLocaleString(undefined, {
+    maximumFractionDigits: 4,
+    minimumFractionDigits: 4
+  })
+
+  return [formatted, 'BC'].join(' ')
+}
+
 export {
   floatNumberPattern,
   calcRealCoinPrice,
@@ -49,5 +58,6 @@ export {
   calcFounderRewardPercentage,
   calcPortfolioItemShare,
   calcPortfolioItemPriceInUsd,
-  calcAndFormatPortfolioItemPriceInUsd
+  calcAndFormatPortfolioItemPriceInUsd,
+  calcAndFormatPortfolioItemPriceInBitClout
 }

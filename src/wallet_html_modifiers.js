@@ -2,7 +2,8 @@ import {
   floatNumberPattern,
   calcFounderRewardPercentage,
   calcAndFormatRealCoinPrice,
-  calcAndFormatPortfolioItemPriceInUsd
+  calcAndFormatPortfolioItemPriceInUsd,
+  calcAndFormatPortfolioItemPriceInBitClout
 } from './calcs_and_formatters'
 
 import { isAN } from './utilities'
@@ -52,7 +53,6 @@ function getHtmlWalletPortfolio() {
           } else if (i === 1) {
             let coinPriceCell = cell.childNodes[0]
             let coinPrice = coinPriceCell.innerHTML
-            portfolioItem.oldCoinPrice = coinPrice
           } else if (i === 2) {
             let assetsInUsdCell = cell.childNodes[0].childNodes[0]
             let assetsInBitCloutCell = cell.childNodes[0].childNodes[1]
@@ -61,14 +61,6 @@ function getHtmlWalletPortfolio() {
               'YOU OWN',
               assetsInBitCloutCell.innerHTML
             ].join(' ')
-
-            portfolioItem.assetsInUsd = assetsInUsdCell.innerHTML.match(
-              floatNumberPattern
-            )[0]
-
-            portfolioItem.assetsInBitClout = assetsInBitCloutCell.innerHTML.match(
-              floatNumberPattern
-            )[0]
           }
         })
 
@@ -106,6 +98,28 @@ function addHtmlWalletUpdateButton() {
 }
 
 function modifyHtmlWalletGridOnFirstLoad() {
+  const totalPriceWrapper = document.querySelector(
+    '.d-flex.align-items-center.justify-content-between.fs-18px.p-15px.holdings__divider.border-bottom.border-color-grey > div.fs-14px'
+  )
+
+  const walletPortfolioHeaderName = document.querySelector(
+    '.row.no-gutters.d-flex.align-items-center.fc-muted.border-bottom.border-color-grey.p-15px .col.mb-0'
+  )
+
+  // const walletPortfolioHeaderPrice = document.querySelector(
+  //   '.row.no-gutters.d-flex.align-items-center.fc-muted.border-bottom.border-color-grey.p-15px .col-2.d-lg-block.d-none.mb-0'
+  // )
+
+  const walletPortfolioHeaderShare = document.querySelector(
+    '.row.no-gutters.d-flex.align-items-center.fc-muted.border-bottom.border-color-grey.p-15px .col-4.mb-0'
+  )
+
+  const walletPortfolioHeaderInfoIcon = walletPortfolioHeaderShare.childNodes[1]
+
+  // const walletPortfolioHeaderEmpty = document.querySelector(
+  //   '.row.no-gutters.d-flex.align-items-center.fc-muted.border-bottom.border-color-grey.p-15px .col-2.d-lg-block.d-none.mb-0:last-child'
+  // )
+
   const walletPortfolioHtml = document.querySelector(
     '.global__center__width .global__mobile-scrollable-section > .fs-15px:not(.container)'
   ).childNodes
@@ -117,6 +131,40 @@ function modifyHtmlWalletGridOnFirstLoad() {
   for (let cell of cellsWithPadding) {
     cell.style.paddingTop = 0
   }
+
+  totalPriceWrapper.classList.add('totalPriceWrapper')
+  totalPriceWrapper.innerHTML = ''
+
+  const totalPriceInUsdCell = document.createElement('div')
+  totalPriceInUsdCell.innerText = '–'
+
+  totalPriceInUsdCell.classList.add(
+    'totalPriceInUsdCell',
+    'font-weight-bold',
+    'text-right'
+  )
+
+  const totalPriceInBitCloutCell = document.createElement('div')
+  totalPriceInBitCloutCell.innerText = '–'
+
+  totalPriceInBitCloutCell.classList.add(
+    'totalPriceInBitCloutCell',
+    'fs-12px',
+    'text-right'
+  )
+
+  totalPriceWrapper.appendChild(totalPriceInUsdCell)
+  totalPriceWrapper.appendChild(totalPriceInBitCloutCell)
+
+  walletPortfolioHeaderName.classList.remove('col')
+  walletPortfolioHeaderName.classList.add('col-5')
+
+  walletPortfolioHeaderShare.classList.remove('col-4')
+  walletPortfolioHeaderShare.classList.add('col-3')
+
+  walletPortfolioHeaderInfoIcon.style.position = 'absolute'
+  walletPortfolioHeaderInfoIcon.style.top = '4px'
+  walletPortfolioHeaderInfoIcon.style.right = '-20px'
 
   getStoreWalletPortfolio().then((portfolio) => {
     walletPortfolioHtml.forEach((portfolioItemHtml, i) => {
@@ -133,9 +181,44 @@ function modifyHtmlWalletGridOnFirstLoad() {
               cell.classList.add('col-5')
 
               cell.childNodes.forEach((aPart, i) => {
+                if (aPart.classList.contains('holdings__avatar')) {
+                  aPart.style.marginBottom = '-8px'
+                }
+
                 if (aPart.classList.contains('holdings__name')) {
                   row.id = aPart.childNodes[0].innerHTML
                   row.classList.add('portfolioRow')
+
+                  aPart.style.height = '44px'
+                  aPart.style.setProperty('flex-direction', 'column')
+
+                  aPart.classList.add(
+                    'd-none',
+                    'd-lg-flex',
+                    'align-items-start',
+                    'justify-content-end'
+                  )
+
+                  let nameElement = document.createElement('span')
+                  let nameElementWrapper = aPart.childNodes[0]
+                  nameElement.classList.add('creatorNameCell')
+                  nameElement.innerText = nameElementWrapper.innerText
+                  nameElementWrapper.innerHTML = ''
+                  nameElementWrapper.appendChild(nameElement)
+
+                  for (let node of aPart.childNodes) {
+                    if (
+                      node &&
+                      node.classList &&
+                      node.classList.contains('mat-tooltip-trigger')
+                    ) {
+                      node.classList.remove('ml-1')
+                      node.classList.add('ml-2')
+                      node.childNodes[0].classList.remove('align-middle')
+                      node.childNodes[0].classList.add('align-baseline')
+                      nameElementWrapper.appendChild(node)
+                    }
+                  }
                 }
               })
             } else if (i === 1) {
@@ -165,14 +248,35 @@ function modifyHtmlWalletGridOnFirstLoad() {
               oldCoinPriceCell.innerHTML = coinPrice
               cell.appendChild(oldCoinPriceCell)
             } else if (i === 2) {
-              let assetsInUsdCell = cell.childNodes[0].childNodes[0]
-              let assetsInBitCloutCell = cell.childNodes[0].childNodes[1]
+              let assetsInUsdCell = document.createElement('div')
+              assetsInUsdCell.classList.add('assetsInUsdCell')
 
+              let assetsInBitCloutCell = document.createElement('div')
+
+              assetsInBitCloutCell.classList.add(
+                'text-grey8A',
+                'fs-12px',
+                'text-right',
+                'assetsInBitCloutCell'
+              )
+
+              cell.innerHTML = ''
               cell.classList.remove('col-4')
               cell.classList.add('col-3')
-              assetsInUsdCell.classList.add('assetsInUsdCell')
-              assetsInBitCloutCell.classList.add('assetsInBitCloutCell')
-              assetsInBitCloutCell.style.paddingTop = '0'
+              cell.style.setProperty('flex-direction', 'column')
+              cell.classList.remove('align-items-center')
+              cell.classList.add('align-items-end')
+
+              cell.appendChild(assetsInUsdCell)
+              cell.appendChild(assetsInBitCloutCell)
+            } else if (i === 3) {
+              cell.childNodes[1].remove()
+              cell.style.setProperty('flex-direction', 'column')
+              cell.classList.remove('align-items-center')
+              cell.classList.add('align-items-end')
+              cell.appendChild(cell.childNodes[0])
+              cell.childNodes[0].style.color = 'black'
+              cell.childNodes[1].classList.add('fs-12px')
             }
           })
         }
@@ -187,6 +291,7 @@ function prepareHtmlWalletForNextDataLoad() {
       clearHtmlWalletPortfolioItemCoinPriceCells()
       clearHtmlWalletPortfolioItemShareInUsdCells()
       clearHtmlWalletPortfolioItemShareInBitCloutCells()
+      clearHtmlWalletPortfolioTotalCells()
 
       resolve()
     })
@@ -210,9 +315,8 @@ function moveHtmlWalletPortfolioOldCoinPrice() {
 }
 
 function updateHtmlWalletPortfolioItemNameCell(item) {
-  let element = document.querySelector(
-    `#${item.username} .holdings__name span:first-child`
-  )
+  let element = document.querySelector(`#${item.username} .creatorNameCell`)
+  console.log(element)
 
   if (
     item.coinEntry != undefined &&
@@ -222,14 +326,6 @@ function updateHtmlWalletPortfolioItemNameCell(item) {
       ' '
     )
   }
-}
-
-function addHtmlWalletPortfolioBitCloutPulseLinks() {
-  getStoreWalletPortfolio().then((portfolio) => {
-    portfolio.forEach((item, i) => {
-      addHtmlWalletPortfolioItemBitCloutPulseLink(item)
-    })
-  })
 }
 
 function addHtmlWalletPortfolioItemBitCloutPulseLink(item) {
@@ -250,8 +346,8 @@ function addHtmlWalletPortfolioItemBitCloutPulseLink(item) {
     bitCloutPulseLink.style.borderColor = 'white'
     bitCloutPulseLink.style.borderStyle = 'solid'
     bitCloutPulseLink.style.position = 'absolute'
-    bitCloutPulseLink.style.top = '16px'
-    bitCloutPulseLink.style.left = '38px'
+    bitCloutPulseLink.style.top = '24px'
+    bitCloutPulseLink.style.left = '36px'
     bitCloutPulseLink.style.width = '16px'
     bitCloutPulseLink.style.height = '16px'
     bitCloutPulseLink.style.lineHeight = '16px'
@@ -279,6 +375,11 @@ function clearHtmlWalletPortfolioItemShareInUsdCells() {
 function clearHtmlWalletPortfolioItemShareInBitCloutCells() {
   const elements = document.getElementsByClassName('assetsInBitCloutCell')
   clearElementsWithDash(elements)
+}
+
+function clearHtmlWalletPortfolioTotalCells() {
+  document.querySelector('.totalPriceInUsdCell').innerText = '–'
+  document.querySelector('.totalPriceInBitCloutCell').innerText = '–'
 }
 
 function updateHtmlWalletPortfolioItemCoinPriceCell(item) {
@@ -313,13 +414,56 @@ function updateHtmlWalletPortfolioItemShareInBitCloutCell(item) {
   if (isNaN(share) || share == undefined) {
     element.innerText = '–'
   } else {
-    const formattedShare = (share / 1000000000).toLocaleString(undefined, {
-      maximumFractionDigits: 4,
-      minimumFractionDigits: 4
+    const formattedShare = calcAndFormatPortfolioItemPriceInBitClout(share)
+    element.innerText = formattedShare
+  }
+}
+
+function updateHtmlWalletPortfolioTotalPriceInUsdCell() {
+  getStoreWalletPortfolio().then((portfolio) => {
+    let expectedTotalBitCloutReturnedNanos = 0
+
+    portfolio.forEach((item, i) => {
+      if (isAN(item.expectedBitCloutReturnedNanos)) {
+        expectedTotalBitCloutReturnedNanos += item.expectedBitCloutReturnedNanos
+      }
     })
 
-    element.innerText = [formattedShare, 'BC'].join(' ')
-  }
+    const total = calcAndFormatRealCoinPrice({
+      coinPriceBitCloutNanos: expectedTotalBitCloutReturnedNanos
+    })
+
+    const element = document.querySelector('.totalPriceInUsdCell')
+
+    if (isAN(parseInt(total))) {
+      element.innerText = ['TOTAL ', '$', total].join('')
+    } else {
+      element.innerText = '–'
+    }
+  })
+}
+
+function updateHtmlWalletPortfolioTotalPriceInBitCloutCell() {
+  getStoreWalletPortfolio().then((portfolio) => {
+    let expectedTotalBitCloutReturnedNanos = 0
+
+    portfolio.forEach((item, i) => {
+      if (isAN(item.expectedBitCloutReturnedNanos)) {
+        expectedTotalBitCloutReturnedNanos += item.expectedBitCloutReturnedNanos
+      }
+    })
+
+    const element = document.querySelector('.totalPriceInBitCloutCell')
+    const formated = calcAndFormatPortfolioItemPriceInBitClout(
+      expectedTotalBitCloutReturnedNanos
+    )
+
+    if (isAN(parseInt(formated))) {
+      element.innerText = formated
+    } else {
+      element.innerText = '–'
+    }
+  })
 }
 
 function updateHtmlWalletPortfolio() {
@@ -329,6 +473,8 @@ function updateHtmlWalletPortfolio() {
       updateHtmlWalletPortfolioItemCoinPriceCell(item)
       updateHtmlWalletPortfolioItemShareInUsdCell(item)
       updateHtmlWalletPortfolioItemShareInBitCloutCell(item)
+      updateHtmlWalletPortfolioTotalPriceInUsdCell()
+      updateHtmlWalletPortfolioTotalPriceInBitCloutCell()
     })
   })
 }
@@ -347,6 +493,5 @@ export {
   updateHtmlWalletPortfolioItemShareInBitCloutCell,
   updateHtmlWalletPortfolioItemNameCell,
   updateHtmlWalletPortfolio,
-  addHtmlWalletPortfolioBitCloutPulseLinks,
   addHtmlWalletPortfolioItemBitCloutPulseLink
 }

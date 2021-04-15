@@ -26,6 +26,8 @@ function updateDataWalletPortfolio() {
 
   getStoreWalletPortfolio().then((portfolio) => {
     portfolio.forEach((item, i) => {
+      item.expectedBitCloutReturnedNanos = '-'
+
       getApiWalletPortfolioItemData(item).then((data) => {
         let newItem = mergeDataWalletPortfolioItem(item, data)
         updateDataWalletPortfolioItem(newItem)
