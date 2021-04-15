@@ -102,13 +102,19 @@ function initProfilePage() {
   )
 
   if (detectionElement.length == 0 && creatorProfileTopCard != null) {
-    let item = {}
-    item.username = pathname.substr(3)
-    getApiWalletPortfolioItemData(item).then((data) => {
-      item = mergeDataWalletPortfolioItem(item, data)
-      addHtmlProfileBitCloutPulseLink(item, creatorProfileTopCard)
-      addHtmlProfileFounderRewardPercentage(item)
-    })
+    const secondDetectionElement = document.getElementsByClassName(
+      'bitCloutPulseLink'
+    )
+
+    if (secondDetectionElement.length == 0) {
+      let item = {}
+      item.username = pathname.substr(3)
+      getApiWalletPortfolioItemData(item).then((data) => {
+        item = mergeDataWalletPortfolioItem(item, data)
+        addHtmlProfileBitCloutPulseLink(item, creatorProfileTopCard)
+        addHtmlProfileFounderRewardPercentage(item)
+      })
+    }
   } else {
     setTimeout(() => {
       initProfilePage()
