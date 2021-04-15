@@ -31,7 +31,7 @@ The extension v0.2.0 has been published and could be installed https://chrome.go
 
 ## Development
 
-Current version is 0.6.0. You could read on how to add this unpacked extension to Google Chrome here https://developer.chrome.com/docs/extensions/mv3/getstarted/
+Current version is 0.7.0. You could read on how to add this unpacked extension to Google Chrome here https://developer.chrome.com/docs/extensions/mv3/getstarted/
 
 ## Support
 
