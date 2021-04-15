@@ -2,3 +2,4 @@
 /server_response
 /node_modules
 /dist/superwallet.js
+/dist/*.zip

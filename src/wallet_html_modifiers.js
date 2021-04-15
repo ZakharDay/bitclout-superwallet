@@ -5,6 +5,7 @@ import {
   calcAndFormatPortfolioItemPriceInUsd
 } from './calcs_and_formatters'
 
+import { isAN } from './utilities'
 import { getStoreWalletPortfolio } from './store'
 import { clearElementsWithDash } from './html_modifiers'
 import { updateDataWalletPortfolio } from './actions'
@@ -284,10 +285,10 @@ function updateHtmlWalletPortfolioItemCoinPriceCell(item) {
   const realCoinPrice = calcAndFormatRealCoinPrice(item)
   let element = document.querySelector(`#${item.username} .coinPriceCell`)
 
-  if (isNaN(realCoinPrice) && realCoinPrice.length <= 3) {
-    element.innerText = '–'
-  } else {
+  if (isAN(parseInt(realCoinPrice))) {
     element.innerText = ['$', realCoinPrice].join('')
+  } else {
+    element.innerText = '–'
   }
 }
 
@@ -295,7 +296,7 @@ function updateHtmlWalletPortfolioItemShareInUsdCell(item) {
   const shareInNanos = item.expectedBitCloutReturnedNanos
   let element = document.querySelector(`#${item.username} .assetsInUsdCell`)
 
-  if (isNaN(shareInNanos)) {
+  if (isNaN(shareInNanos) || shareInNanos == undefined) {
     element.innerText = '–'
   } else {
     element.innerText = calcAndFormatPortfolioItemPriceInUsd(shareInNanos)
@@ -309,7 +310,7 @@ function updateHtmlWalletPortfolioItemShareInBitCloutCell(item) {
     `#${item.username} .assetsInBitCloutCell`
   )
 
-  if (isNaN(share)) {
+  if (isNaN(share) || share == undefined) {
     element.innerText = '–'
   } else {
     const formattedShare = (share / 1000000000).toLocaleString(undefined, {

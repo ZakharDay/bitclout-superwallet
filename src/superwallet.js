@@ -90,7 +90,6 @@ function initWalletPage() {
     .then(modifyHtmlWalletGridOnFirstLoad)
     .then(prepareHtmlWalletForNextDataLoad)
     .then(updateDataWalletPortfolio)
-    .then(addHtmlWalletPortfolioBitCloutPulseLinks)
     .then(addHtmlWalletUpdateButton)
 }
 
