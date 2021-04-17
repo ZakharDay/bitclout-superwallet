@@ -20,7 +20,7 @@ function modifyHtmlSidebarOnFirstLoad(creatorList) {
   )[0]
 
   let headingClone = heading.cloneNode(true)
-  headingClone.innerHTML = 'Creators'
+  headingClone.innerHTML = 'Your Watch List'
 
   let wrapperClone = wrapper.cloneNode(true)
   wrapperClone.classList.add('sidebarCreatorList')
