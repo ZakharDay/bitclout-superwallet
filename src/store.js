@@ -1,7 +1,12 @@
 let publicKey = ''
 let bitCloutPrice = 0
 let walletPortfolio = []
-let mention = ''
+
+let mention = {
+  suggest: false,
+  usernamePrefix: '',
+  lastInteraction: 0
+}
 
 function getStorePublicKey() {
   return publicKey

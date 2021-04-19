@@ -1,11 +1,15 @@
+import getCaretCoordinates from 'textarea-caret'
+
 import { updateDataWalletPortfolio } from './actions'
 import { getHtmlBitCloutPrice } from './html_modifiers'
 import { addStupidFixForNotificationsFeed } from './notifications_html_modifiers'
 import { mergeDataWalletPortfolioItem } from './data_modifiers'
+import { updateHtmlDropdown } from './browse_html_modifiers'
 
 import {
   getApiWalletPortfolioItemData,
-  getChromeStorageWatchedCreatorsData
+  getChromeStorageWatchedCreatorsData,
+  getApiPostMentionData
 } from './server_requests'
 
 import {
@@ -148,75 +152,146 @@ function initSidebar() {
 }
 
 function initBrowsePage() {
+  const bitCloutPrice = getHtmlBitCloutPrice()
+  setStoreBitCloutPrice(bitCloutPrice)
+
+  // prepare hover style
+  const css =
+    '.mentionDropdownItem:hover { background-color: #E6F0FF; cursor: pointer; }'
+  const style = document.createElement('style')
+
+  if (style.styleSheet) {
+    style.styleSheet.cssText = css
+  } else {
+    style.appendChild(document.createTextNode(css))
+  }
+
+  document.getElementsByTagName('head')[0].appendChild(style)
+
+  // prepare dropdown element
   const textarea = document.querySelector('textarea.feed-create-post__textarea')
   const wrapper = textarea.parentElement
   const dropdown = document.createElement('div')
   dropdown.classList.add('mentionDropdown')
-  dropdown.style.width = '100px'
-  dropdown.style.height = '100px'
+  dropdown.style.width = '260px'
+  dropdown.style.padding = '10px 0'
   dropdown.style.backgroundColor = 'white'
-  dropdown.style.boxShadow = '0 0 5px #999999'
+  dropdown.style.boxShadow = '0 0 5px rgba(0,0,0,0.15)'
+  dropdown.style.borderRadius = '10px'
   dropdown.style.display = 'none'
   dropdown.style.position = 'absolute'
   dropdown.style.top = '-10000px'
   dropdown.style.left = '-10000px'
+  dropdown.style.zIndex = '999999999999999'
   wrapper.style.position = 'relative'
   wrapper.appendChild(dropdown)
+
+  textarea.addEventListener('keydown', () => {
+    const key = event.keyCode
+
+    if (key == 8 || key == 46) {
+      let mention = getStoreMention()
+
+      if (mention.suggest === true) {
+        const caretPlace = textarea.selectionEnd
+        const caret = getCaretCoordinates(textarea, caretPlace)
+        const value = textarea.value.slice(0, caretPlace)
+        const atPlace = value.lastIndexOf('@')
+        const usernamePrefix = value.slice(atPlace + 1, caretPlace)
+        console.log('USERNAME PREFIX', usernamePrefix)
+
+        mention = {
+          suggest: true,
+          usernamePrefix: usernamePrefix,
+          lastInteraction: Date.now()
+        }
+
+        setStoreMention(mention)
+
+        getApiPostMentionData(usernamePrefix).then((data) => {
+          dropdown.innerHTML = ''
+          updateHtmlDropdown(data)
+          dropdown.style.display = 'block'
+          dropdown.style.top = `${caret.top + caret.height + 11}px`
+          dropdown.style.left = `${caret.left - 11}px`
+        })
+      }
+    }
+  })
+
+  document.addEventListener('click', () => {
+    let mention = getStoreMention()
+
+    if (mention.suggest === true) {
+      mention = {
+        suggest: false,
+        usernamePrefix: '',
+        lastInteraction: 0
+      }
+
+      setStoreMention(mention)
+
+      dropdown.innerHTML = ''
+      dropdown.style.display = 'none'
+      dropdown.style.top = '-10000px'
+      dropdown.style.left = '-10000px'
+    } else {
+    }
+  })
 
   textarea.addEventListener('input', () => {
     const value = textarea.value
     const lastCharacter = textarea.value.substr(textarea.value.length - 1)
+    let mention = getStoreMention()
 
     if (lastCharacter === '@') {
-      console.log('at')
-      const startPosition = textarea.selectionStart
-      const endPosition = textarea.selectionEnd
-      const textareaRect = textarea.getBoundingClientRect()
-      const lineHeight = 27
-      const offsetTop = 5
-      const offsetLeft = 5
-      const lineWidth = 46
-      const charWidth = 11
-      let line = 1
-      let topPixels = offsetTop
-      let leftPixels = offsetLeft
-
-      // offset top 5px
-      // offset left 5px
-      // 46 chars // 27 px height
-      // 46
-
-      dropdown.style.display = 'block'
-
-      if (startPosition <= lineWidth) {
-        topPixels += lineHeight
-        leftPixels += startPosition * charWidth
-      } else if (startPosition > lineWidth && startPosition <= lineWidth * 2) {
-        topPixels += lineHeight * 2
-        leftPixels += (startPosition - lineWidth) * charWidth
-      } else if (
-        startPosition > lineWidth * 2 &&
-        startPosition <= lineWidth * 3
-      ) {
-        topPixels += lineHeight * 3
-        leftPixels += (startPosition - lineWidth * 2) * charWidth
+      mention = {
+        suggest: true,
+        usernamePrefix: '',
+        lastInteraction: 0
       }
 
-      dropdown.style.top = `${topPixels}px`
-      dropdown.style.left = `${leftPixels}px`
-
-      // Check if you've selected text
-      if (startPosition == endPosition) {
-        // prettier-ignore
-        console.log('The position of the cursor is (' + startPosition + '/' + textarea.value.length + ')')
-      } else {
-        // prettier-ignore
-        console.log('Selected text from (' + startPosition + ' to ' + endPosition + ' of ' + textarea.value.length + ')')
+      setStoreMention(mention)
+    } else if (lastCharacter === ' ' || lastCharacter === '\n') {
+      mention = {
+        suggest: false,
+        usernamePrefix: '',
+        lastInteraction: 0
       }
-    } else if (lastCharacter === ' ') {
-      console.log('space')
-    } else if (lastCharacter === '\n') {
-      console.log('break')
+
+      setStoreMention(mention)
+
+      dropdown.innerHTML = ''
+      dropdown.style.display = 'none'
+      dropdown.style.top = '-10000px'
+      dropdown.style.left = '-10000px'
+    } else if (mention.suggest === true && lastCharacter != '@') {
+      const caret = getCaretCoordinates(textarea, textarea.selectionEnd)
+      const usernamePrefix = [mention.usernamePrefix, lastCharacter].join('')
+
+      mention = {
+        suggest: true,
+        usernamePrefix: usernamePrefix,
+        lastInteraction: Date.now()
+      }
+
+      setStoreMention(mention)
+      dropdown.innerHTML = ''
+      dropdown.style.display = 'none'
+      dropdown.style.top = '-10000px'
+      dropdown.style.left = '-10000px'
+      // dropdown.innerText = usernamePrefix
+
+      // prettier-ignore
+      console.log('(top, left, height) = (%s, %s, %s)', caret.top, caret.left, caret.height)
+
+      getApiPostMentionData(usernamePrefix).then((data) => {
+        dropdown.innerHTML = ''
+        updateHtmlDropdown(data)
+        dropdown.style.display = 'block'
+        dropdown.style.top = `${caret.top + caret.height + 11}px`
+        dropdown.style.left = `${caret.left - 11}px`
+      })
     }
 
     console.log(textarea.value.substr(textarea.value.length - 1))

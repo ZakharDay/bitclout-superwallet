@@ -15,6 +15,7 @@ import {
   updateHtmlSidebar
 } from './sidebar_html_modifiers'
 
+import { updateHtmlDropdown } from './browse_html_modifiers'
 import { getStorePublicKey } from './store'
 import { updateWalletPortfolioItemData } from './actions'
 
@@ -134,9 +135,46 @@ function getApiSidebarCreatorCoinData(username, order) {
     })
 }
 
+function getApiPostMentionData(prefix) {
+  const publicKey = getStorePublicKey()
+
+  const data = {
+    AddGlobalFeedBool: false,
+    Description: '',
+    FetchUsersThatHODL: false,
+    ModerationType: '',
+    NumToFetch: 6,
+    OrderBy: '',
+    PublicKeyBase58Check: '',
+    ReaderPublicKeyBase58Check: publicKey,
+    Username: '',
+    UsernamePrefix: prefix
+  }
+
+  return new Promise(function (resolve, reject) {
+    fetch(getProfilesUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        resolve(data)
+        // console.log('Success:', data)
+      })
+      .catch((error) => {
+        resolve()
+        console.error('Error:', error)
+      })
+  })
+}
+
 export {
   getApiWalletPortfolioItemData,
   getApiCreatorCoinBuyOrSellData,
   getChromeStorageWatchedCreatorsData,
-  getApiSidebarCreatorCoinData
+  getApiSidebarCreatorCoinData,
+  getApiPostMentionData
 }
