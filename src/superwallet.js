@@ -159,49 +159,39 @@ function initSidebar() {
 function initBrowsePage() {
   const bitCloutPrice = getHtmlBitCloutPrice()
   setStoreBitCloutPrice(bitCloutPrice)
-
   addHtmlDropdown()
 
-  // prepare dropdown element
   const textarea = document.querySelector('textarea.feed-create-post__textarea')
-  // const wrapper = textarea.parentElement
   const dropdown = document.createElement('div')
-  // dropdown.classList.add('mentionDropdown')
-  // dropdown.style.width = '260px'
-  // dropdown.style.padding = '10px 0'
-  // dropdown.style.backgroundColor = 'white'
-  // dropdown.style.boxShadow = '0 0 5px rgba(0,0,0,0.15)'
-  // dropdown.style.borderRadius = '10px'
-  // dropdown.style.display = 'none'
-  // dropdown.style.position = 'absolute'
-  // dropdown.style.top = '-10000px'
-  // dropdown.style.left = '-10000px'
-  // dropdown.style.zIndex = '999999999999999'
-  // wrapper.style.position = 'relative'
-  // wrapper.appendChild(dropdown)
 
-  document.addEventListener('click', () => {
-    let mention = getStoreMention()
+  document.addEventListener(
+    'click',
+    function (e) {
+      if (!e.target.closest('.mentionDropdown')) {
+        console.log('outside')
+        let mention = getStoreMention()
 
-    if (mention.suggest === true) {
-      mention = {
-        suggest: false,
-        usernamePrefix: '',
-        lastInteraction: 0
+        if (mention.suggest === true) {
+          mention = {
+            suggest: false,
+            usernamePrefix: '',
+            lastInteraction: 0,
+            data: {}
+          }
+
+          setStoreMention(mention)
+          hideHtmlDropdown()
+        }
       }
-
-      setStoreMention(mention)
-      hideHtmlDropdown()
-    } else {
-    }
-  })
+    },
+    false
+  )
 
   textarea.addEventListener('keydown', () => {
     const key = event.keyCode
     let mention = getStoreMention()
 
     if (key == 8 || key == 46) {
-      // if (mention.suggest === true) {
       const caretPlace = textarea.selectionEnd - 1
       const value = textarea.value.slice(0, caretPlace)
 
@@ -209,17 +199,10 @@ function initBrowsePage() {
       const spacePlace = value.lastIndexOf(' ')
       const breakPlace = value.lastIndexOf('\n')
 
-      // SAMPLE
-      // Bla bla @zakharday make @superwallet
-
-      console.log(atPlace, spacePlace, breakPlace)
-
       if (atPlace != -1) {
         let usernamePrefix = ''
-        // @zakharday|
         if (spacePlace == -1 && breakPlace == -1) {
           usernamePrefix = value.slice(atPlace + 1, caretPlace)
-          // So @zakharday|
         } else if (
           (spacePlace != -1 && atPlace > spacePlace) ||
           (breakPlace != -1 && atPlace > breakPlace)
@@ -228,11 +211,8 @@ function initBrowsePage() {
         }
 
         dropdown.innerHTML = ''
-        console.log('USERNAME PREFIX', usernamePrefix)
 
         if (usernamePrefix != '') {
-          // dropdown.innerHTML = ''
-
           getApiPostMentionData(usernamePrefix).then((data) => {
             mention = {
               suggest: true,
@@ -254,7 +234,6 @@ function initBrowsePage() {
           setStoreMention(mention).then(hideHtmlDropdown)
         }
       }
-      // }
     } else if (key == 27) {
       mention = {
         suggest: false,
@@ -269,26 +248,16 @@ function initBrowsePage() {
 
   textarea.addEventListener('input', () => {
     let mention = getStoreMention()
-
-    // if (mention.suggest === true) {
     const caretPlace = textarea.selectionEnd
     const value = textarea.value.slice(0, caretPlace)
-
     const atPlace = value.lastIndexOf('@')
     const spacePlace = value.lastIndexOf(' ')
     const breakPlace = value.lastIndexOf('\n')
 
-    // SAMPLE
-    // Bla bla @zakharday make @superwallet
-
-    console.log(atPlace, spacePlace, breakPlace)
-
     if (atPlace != -1) {
       let usernamePrefix = ''
-      // @zakharday|
       if (spacePlace == -1 && breakPlace == -1) {
         usernamePrefix = value.slice(atPlace + 1, caretPlace)
-        // So @zakharday|
       } else if (
         (spacePlace != -1 && atPlace > spacePlace) ||
         (breakPlace != -1 && atPlace > breakPlace)
@@ -297,11 +266,8 @@ function initBrowsePage() {
       }
 
       dropdown.innerHTML = ''
-      console.log('USERNAME PREFIX', usernamePrefix)
 
       if (usernamePrefix != '') {
-        // dropdown.innerHTML = ''
-
         getApiPostMentionData(usernamePrefix).then((data) => {
           mention = {
             suggest: true,
@@ -323,50 +289,6 @@ function initBrowsePage() {
         setStoreMention(mention).then(hideHtmlDropdown)
       }
     }
-    // }
-    // const value = textarea.value
-    // const lastCharacter = textarea.value.substr(textarea.value.length - 1)
-    // let mention = getStoreMention()
-    // if (lastCharacter === '@') {
-    //   mention = {
-    //     suggest: true,
-    //     usernamePrefix: '',
-    //     lastInteraction: 0,
-    //     data: {}
-    //   }
-    //
-    //   setStoreMention(mention)
-    // } else if (lastCharacter === ' ' || lastCharacter === '\n') {
-    //   mention = {
-    //     suggest: false,
-    //     usernamePrefix: '',
-    //     lastInteraction: 0,
-    //     data: {}
-    //   }
-    //
-    //   setStoreMention(mention)
-    //   hideHtmlDropdown()
-    // } else if (mention.suggest === true && lastCharacter != '@') {
-    //   // const usernamePrefix = [mention.usernamePrefix, lastCharacter].join('')
-    //   const caretPlace = textarea.selectionEnd
-    //   // const caret = getCaretCoordinates(textarea, caretPlace)
-    //   const value = textarea.value.slice(0, caretPlace)
-    //   const atPlace = value.lastIndexOf('@')
-    //   const usernamePrefix = value.slice(atPlace + 1, caretPlace)
-    //   console.log('USERNAME PREFIX', usernamePrefix)
-    //   dropdown.innerHTML = ''
-    //
-    //   getApiPostMentionData(usernamePrefix).then((data) => {
-    //     mention = {
-    //       suggest: true,
-    //       usernamePrefix: usernamePrefix,
-    //       lastInteraction: Date.now(),
-    //       data: data
-    //     }
-    //
-    //     setStoreMention(mention).then(updateHtmlDropdown)
-    //   })
-    // }
   })
 }
 

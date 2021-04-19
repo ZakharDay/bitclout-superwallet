@@ -101,6 +101,25 @@ function updateHtmlDropdown() {
     listItem.appendChild(userpic)
     listItem.appendChild(userDataWrapper)
 
+    listItem.addEventListener('click', () => {
+      const caretPlace = textarea.selectionEnd
+      const value = textarea.value
+      const textBeforeCaret = value.slice(0, caretPlace)
+      const textAfterCaret = value.slice(caretPlace, value.length)
+      const atPlace = textBeforeCaret.lastIndexOf('@')
+      const textBeforeAt = textBeforeCaret.slice(0, atPlace)
+      const newValue = [
+        textBeforeAt,
+        '@',
+        profile['Username'],
+        textAfterCaret
+      ].join('')
+
+      textarea.value = newValue
+      textarea.focus()
+      hideHtmlDropdown()
+    })
+
     dropdown.appendChild(listItem)
 
     // profile['IsHidden']
