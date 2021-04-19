@@ -42,7 +42,10 @@ function getStoreMention() {
 }
 
 function setStoreMention(newMention) {
-  mention = newMention
+  return new Promise(function (resolve, reject) {
+    mention = newMention
+    resolve()
+  })
 }
 
 export {

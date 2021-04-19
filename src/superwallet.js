@@ -4,7 +4,12 @@ import { updateDataWalletPortfolio } from './actions'
 import { getHtmlBitCloutPrice } from './html_modifiers'
 import { addStupidFixForNotificationsFeed } from './notifications_html_modifiers'
 import { mergeDataWalletPortfolioItem } from './data_modifiers'
-import { updateHtmlDropdown } from './browse_html_modifiers'
+
+import {
+  addHtmlDropdown,
+  hideHtmlDropdown,
+  updateHtmlDropdown
+} from './browse_html_modifiers'
 
 import {
   getApiWalletPortfolioItemData,
@@ -155,69 +160,25 @@ function initBrowsePage() {
   const bitCloutPrice = getHtmlBitCloutPrice()
   setStoreBitCloutPrice(bitCloutPrice)
 
-  // prepare hover style
-  const css =
-    '.mentionDropdownItem:hover { background-color: #E6F0FF; cursor: pointer; }'
-  const style = document.createElement('style')
-
-  if (style.styleSheet) {
-    style.styleSheet.cssText = css
-  } else {
-    style.appendChild(document.createTextNode(css))
-  }
-
-  document.getElementsByTagName('head')[0].appendChild(style)
+  addHtmlDropdown()
 
   // prepare dropdown element
   const textarea = document.querySelector('textarea.feed-create-post__textarea')
-  const wrapper = textarea.parentElement
+  // const wrapper = textarea.parentElement
   const dropdown = document.createElement('div')
-  dropdown.classList.add('mentionDropdown')
-  dropdown.style.width = '260px'
-  dropdown.style.padding = '10px 0'
-  dropdown.style.backgroundColor = 'white'
-  dropdown.style.boxShadow = '0 0 5px rgba(0,0,0,0.15)'
-  dropdown.style.borderRadius = '10px'
-  dropdown.style.display = 'none'
-  dropdown.style.position = 'absolute'
-  dropdown.style.top = '-10000px'
-  dropdown.style.left = '-10000px'
-  dropdown.style.zIndex = '999999999999999'
-  wrapper.style.position = 'relative'
-  wrapper.appendChild(dropdown)
-
-  textarea.addEventListener('keydown', () => {
-    const key = event.keyCode
-
-    if (key == 8 || key == 46) {
-      let mention = getStoreMention()
-
-      if (mention.suggest === true) {
-        const caretPlace = textarea.selectionEnd
-        const caret = getCaretCoordinates(textarea, caretPlace)
-        const value = textarea.value.slice(0, caretPlace)
-        const atPlace = value.lastIndexOf('@')
-        const usernamePrefix = value.slice(atPlace + 1, caretPlace)
-        console.log('USERNAME PREFIX', usernamePrefix)
-
-        mention = {
-          suggest: true,
-          usernamePrefix: usernamePrefix,
-          lastInteraction: Date.now()
-        }
-
-        setStoreMention(mention)
-
-        getApiPostMentionData(usernamePrefix).then((data) => {
-          dropdown.innerHTML = ''
-          updateHtmlDropdown(data)
-          dropdown.style.display = 'block'
-          dropdown.style.top = `${caret.top + caret.height + 11}px`
-          dropdown.style.left = `${caret.left - 11}px`
-        })
-      }
-    }
-  })
+  // dropdown.classList.add('mentionDropdown')
+  // dropdown.style.width = '260px'
+  // dropdown.style.padding = '10px 0'
+  // dropdown.style.backgroundColor = 'white'
+  // dropdown.style.boxShadow = '0 0 5px rgba(0,0,0,0.15)'
+  // dropdown.style.borderRadius = '10px'
+  // dropdown.style.display = 'none'
+  // dropdown.style.position = 'absolute'
+  // dropdown.style.top = '-10000px'
+  // dropdown.style.left = '-10000px'
+  // dropdown.style.zIndex = '999999999999999'
+  // wrapper.style.position = 'relative'
+  // wrapper.appendChild(dropdown)
 
   document.addEventListener('click', () => {
     let mention = getStoreMention()
@@ -230,71 +191,182 @@ function initBrowsePage() {
       }
 
       setStoreMention(mention)
-
-      dropdown.innerHTML = ''
-      dropdown.style.display = 'none'
-      dropdown.style.top = '-10000px'
-      dropdown.style.left = '-10000px'
+      hideHtmlDropdown()
     } else {
     }
   })
 
-  textarea.addEventListener('input', () => {
-    const value = textarea.value
-    const lastCharacter = textarea.value.substr(textarea.value.length - 1)
+  textarea.addEventListener('keydown', () => {
+    const key = event.keyCode
     let mention = getStoreMention()
 
-    if (lastCharacter === '@') {
-      mention = {
-        suggest: true,
-        usernamePrefix: '',
-        lastInteraction: 0
-      }
+    if (key == 8 || key == 46) {
+      // if (mention.suggest === true) {
+      const caretPlace = textarea.selectionEnd - 1
+      const value = textarea.value.slice(0, caretPlace)
 
-      setStoreMention(mention)
-    } else if (lastCharacter === ' ' || lastCharacter === '\n') {
+      const atPlace = value.lastIndexOf('@')
+      const spacePlace = value.lastIndexOf(' ')
+      const breakPlace = value.lastIndexOf('\n')
+
+      // SAMPLE
+      // Bla bla @zakharday make @superwallet
+
+      console.log(atPlace, spacePlace, breakPlace)
+
+      if (atPlace != -1) {
+        let usernamePrefix = ''
+        // @zakharday|
+        if (spacePlace == -1 && breakPlace == -1) {
+          usernamePrefix = value.slice(atPlace + 1, caretPlace)
+          // So @zakharday|
+        } else if (
+          (spacePlace != -1 && atPlace > spacePlace) ||
+          (breakPlace != -1 && atPlace > breakPlace)
+        ) {
+          usernamePrefix = value.slice(atPlace + 1, caretPlace)
+        }
+
+        dropdown.innerHTML = ''
+        console.log('USERNAME PREFIX', usernamePrefix)
+
+        if (usernamePrefix != '') {
+          // dropdown.innerHTML = ''
+
+          getApiPostMentionData(usernamePrefix).then((data) => {
+            mention = {
+              suggest: true,
+              usernamePrefix: usernamePrefix,
+              lastInteraction: Date.now(),
+              data: data
+            }
+
+            setStoreMention(mention).then(updateHtmlDropdown)
+          })
+        } else {
+          mention = {
+            suggest: false,
+            usernamePrefix: '',
+            lastInteraction: 0,
+            data: {}
+          }
+
+          setStoreMention(mention).then(hideHtmlDropdown)
+        }
+      }
+      // }
+    } else if (key == 27) {
       mention = {
         suggest: false,
         usernamePrefix: '',
-        lastInteraction: 0
+        lastInteraction: 0,
+        data: {}
       }
 
-      setStoreMention(mention)
-
-      dropdown.innerHTML = ''
-      dropdown.style.display = 'none'
-      dropdown.style.top = '-10000px'
-      dropdown.style.left = '-10000px'
-    } else if (mention.suggest === true && lastCharacter != '@') {
-      const caret = getCaretCoordinates(textarea, textarea.selectionEnd)
-      const usernamePrefix = [mention.usernamePrefix, lastCharacter].join('')
-
-      mention = {
-        suggest: true,
-        usernamePrefix: usernamePrefix,
-        lastInteraction: Date.now()
-      }
-
-      setStoreMention(mention)
-      dropdown.innerHTML = ''
-      dropdown.style.display = 'none'
-      dropdown.style.top = '-10000px'
-      dropdown.style.left = '-10000px'
-      // dropdown.innerText = usernamePrefix
-
-      // prettier-ignore
-      console.log('(top, left, height) = (%s, %s, %s)', caret.top, caret.left, caret.height)
-
-      getApiPostMentionData(usernamePrefix).then((data) => {
-        dropdown.innerHTML = ''
-        updateHtmlDropdown(data)
-        dropdown.style.display = 'block'
-        dropdown.style.top = `${caret.top + caret.height + 11}px`
-        dropdown.style.left = `${caret.left - 11}px`
-      })
+      setStoreMention(mention).then(hideHtmlDropdown)
     }
+  })
 
-    console.log(textarea.value.substr(textarea.value.length - 1))
+  textarea.addEventListener('input', () => {
+    let mention = getStoreMention()
+
+    // if (mention.suggest === true) {
+    const caretPlace = textarea.selectionEnd
+    const value = textarea.value.slice(0, caretPlace)
+
+    const atPlace = value.lastIndexOf('@')
+    const spacePlace = value.lastIndexOf(' ')
+    const breakPlace = value.lastIndexOf('\n')
+
+    // SAMPLE
+    // Bla bla @zakharday make @superwallet
+
+    console.log(atPlace, spacePlace, breakPlace)
+
+    if (atPlace != -1) {
+      let usernamePrefix = ''
+      // @zakharday|
+      if (spacePlace == -1 && breakPlace == -1) {
+        usernamePrefix = value.slice(atPlace + 1, caretPlace)
+        // So @zakharday|
+      } else if (
+        (spacePlace != -1 && atPlace > spacePlace) ||
+        (breakPlace != -1 && atPlace > breakPlace)
+      ) {
+        usernamePrefix = value.slice(atPlace + 1, caretPlace)
+      }
+
+      dropdown.innerHTML = ''
+      console.log('USERNAME PREFIX', usernamePrefix)
+
+      if (usernamePrefix != '') {
+        // dropdown.innerHTML = ''
+
+        getApiPostMentionData(usernamePrefix).then((data) => {
+          mention = {
+            suggest: true,
+            usernamePrefix: usernamePrefix,
+            lastInteraction: Date.now(),
+            data: data
+          }
+
+          setStoreMention(mention).then(updateHtmlDropdown)
+        })
+      } else {
+        mention = {
+          suggest: false,
+          usernamePrefix: '',
+          lastInteraction: 0,
+          data: {}
+        }
+
+        setStoreMention(mention).then(hideHtmlDropdown)
+      }
+    }
+    // }
+    // const value = textarea.value
+    // const lastCharacter = textarea.value.substr(textarea.value.length - 1)
+    // let mention = getStoreMention()
+    // if (lastCharacter === '@') {
+    //   mention = {
+    //     suggest: true,
+    //     usernamePrefix: '',
+    //     lastInteraction: 0,
+    //     data: {}
+    //   }
+    //
+    //   setStoreMention(mention)
+    // } else if (lastCharacter === ' ' || lastCharacter === '\n') {
+    //   mention = {
+    //     suggest: false,
+    //     usernamePrefix: '',
+    //     lastInteraction: 0,
+    //     data: {}
+    //   }
+    //
+    //   setStoreMention(mention)
+    //   hideHtmlDropdown()
+    // } else if (mention.suggest === true && lastCharacter != '@') {
+    //   // const usernamePrefix = [mention.usernamePrefix, lastCharacter].join('')
+    //   const caretPlace = textarea.selectionEnd
+    //   // const caret = getCaretCoordinates(textarea, caretPlace)
+    //   const value = textarea.value.slice(0, caretPlace)
+    //   const atPlace = value.lastIndexOf('@')
+    //   const usernamePrefix = value.slice(atPlace + 1, caretPlace)
+    //   console.log('USERNAME PREFIX', usernamePrefix)
+    //   dropdown.innerHTML = ''
+    //
+    //   getApiPostMentionData(usernamePrefix).then((data) => {
+    //     mention = {
+    //       suggest: true,
+    //       usernamePrefix: usernamePrefix,
+    //       lastInteraction: Date.now(),
+    //       data: data
+    //     }
+    //
+    //     setStoreMention(mention).then(updateHtmlDropdown)
+    //   })
+    // }
   })
 }
 

@@ -1,8 +1,58 @@
-import { calcAndFormatPortfolioItemPriceInUsd } from './calcs_and_formatters'
+import getCaretCoordinates from 'textarea-caret'
 
-function updateHtmlDropdown(data) {
+import { calcAndFormatPortfolioItemPriceInUsd } from './calcs_and_formatters'
+import { getStoreMention } from './store'
+
+function addHtmlDropdown() {
+  const css = `.mentionDropdownItem:hover {
+    background-color: #E6F0FF; cursor: pointer;
+  }`
+
+  const style = document.createElement('style')
+
+  if (style.styleSheet) {
+    style.styleSheet.cssText = css
+  } else {
+    style.appendChild(document.createTextNode(css))
+  }
+
+  document.getElementsByTagName('head')[0].appendChild(style)
+
+  const textarea = document.querySelector('textarea.feed-create-post__textarea')
+  const wrapper = textarea.parentElement
+  const dropdown = document.createElement('div')
+  dropdown.classList.add('mentionDropdown')
+  dropdown.style.width = '260px'
+  dropdown.style.padding = '10px 0'
+  dropdown.style.backgroundColor = 'white'
+  dropdown.style.boxShadow = '0 0 5px rgba(0,0,0,0.15)'
+  dropdown.style.borderRadius = '10px'
+  dropdown.style.display = 'none'
+  dropdown.style.position = 'absolute'
+  dropdown.style.top = '-10000px'
+  dropdown.style.left = '-10000px'
+  dropdown.style.zIndex = '999999999999999'
+  wrapper.style.position = 'relative'
+  wrapper.appendChild(dropdown)
+}
+
+function hideHtmlDropdown() {
   const dropdown = document.getElementsByClassName('mentionDropdown')[0]
-  // let list = []
+  dropdown.innerHTML = ''
+  dropdown.style.display = 'none'
+  dropdown.style.top = '-10000px'
+  dropdown.style.left = '-10000px'
+}
+
+function updateHtmlDropdown() {
+  const data = getStoreMention().data
+  const textarea = document.querySelector('textarea.feed-create-post__textarea')
+  const caret = getCaretCoordinates(textarea, textarea.selectionEnd)
+  const dropdown = document.getElementsByClassName('mentionDropdown')[0]
+  dropdown.innerHTML = ''
+  dropdown.style.display = 'block'
+  dropdown.style.top = `${caret.top + caret.height + 11}px`
+  dropdown.style.left = `${caret.left - 11}px`
 
   data['ProfilesFound'].forEach((profile, i) => {
     let userpic = document.createElement('div')
@@ -22,10 +72,8 @@ function updateHtmlDropdown(data) {
     username.style.fontWeight = '400'
     username.style.fontSize = '15px'
     username.style.color = '#222'
-    // username.classList.add('text-grey9', 'fs-12px', 'd-lg-none')
 
     let usercoin = document.createElement('div')
-    console.log('CoinPriceBitCloutNanos', profile['CoinPriceBitCloutNanos'])
     usercoin.innerText = calcAndFormatPortfolioItemPriceInUsd(
       profile['CoinPriceBitCloutNanos']
     )
@@ -43,7 +91,6 @@ function updateHtmlDropdown(data) {
     listItem.style.height = '60px'
     listItem.style.padding = '0 20px'
     listItem.style.boxSizing = 'border-box'
-    // listItem.style.lineHeight = '60px'
     listItem.style.display = 'flex'
     listItem.style.setProperty('align-items', 'center')
 
@@ -60,8 +107,6 @@ function updateHtmlDropdown(data) {
     // profile['IsReserved']
     // profile['IsVerified']
   })
-
-  console.log(data)
 }
 
-export { updateHtmlDropdown }
+export { addHtmlDropdown, hideHtmlDropdown, updateHtmlDropdown }
