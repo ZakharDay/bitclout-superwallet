@@ -1,6 +1,7 @@
 let publicKey = ''
 let bitCloutPrice = 0
 let walletPortfolio = []
+let mention = ''
 
 function getStorePublicKey() {
   return publicKey
@@ -31,11 +32,21 @@ function setStoreWalletPortfolio(newWalletPortfolio) {
   })
 }
 
+function getStoreMention() {
+  return mention
+}
+
+function setStoreMention(newMention) {
+  mention = newMention
+}
+
 export {
   getStorePublicKey,
   setStorePublicKey,
   getStoreBitCloutPrice,
   setStoreBitCloutPrice,
   getStoreWalletPortfolio,
-  setStoreWalletPortfolio
+  setStoreWalletPortfolio,
+  getStoreMention,
+  setStoreMention
 }
