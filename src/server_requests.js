@@ -46,7 +46,6 @@ function getApiWalletPortfolioItemData(item) {
       .then((response) => response.json())
       .then((data) => {
         resolve(data)
-        // console.log('Success:', data)
       })
       .catch((error) => {
         resolve(error)

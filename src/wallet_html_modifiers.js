@@ -465,15 +465,24 @@ function updateHtmlWalletPortfolioTotalPriceInBitCloutCell() {
   })
 }
 
+function removeHtmlWalletPortfolioItem(item) {
+  let element = document.getElementById(item.username)
+  element.style.display = 'none'
+}
+
 function updateHtmlWalletPortfolio() {
   getStoreWalletPortfolio().then((portfolio) => {
     portfolio.forEach((item, i) => {
-      updateHtmlWalletPortfolioItemNameCell(item)
-      updateHtmlWalletPortfolioItemCoinPriceCell(item)
-      updateHtmlWalletPortfolioItemShareInUsdCell(item)
-      updateHtmlWalletPortfolioItemShareInBitCloutCell(item)
-      updateHtmlWalletPortfolioTotalPriceInUsdCell()
-      updateHtmlWalletPortfolioTotalPriceInBitCloutCell()
+      if (item.balanceNanos <= 1) {
+        removeHtmlWalletPortfolioItem(item)
+      } else {
+        updateHtmlWalletPortfolioItemNameCell(item)
+        updateHtmlWalletPortfolioItemCoinPriceCell(item)
+        updateHtmlWalletPortfolioItemShareInUsdCell(item)
+        updateHtmlWalletPortfolioItemShareInBitCloutCell(item)
+        updateHtmlWalletPortfolioTotalPriceInUsdCell()
+        updateHtmlWalletPortfolioTotalPriceInBitCloutCell()
+      }
     })
   })
 }

@@ -168,7 +168,6 @@ function initBrowsePage() {
     'click',
     function (e) {
       if (!e.target.closest('.mentionDropdown')) {
-        console.log('outside')
         let mention = getStoreMention()
 
         if (mention.suggest === true) {

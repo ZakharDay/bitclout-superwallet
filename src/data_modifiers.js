@@ -2,6 +2,7 @@ import { getStorePublicKey } from './store'
 import { getApiCreatorCoinBuyOrSellData } from './server_requests'
 
 function mergeDataWalletPortfolioItem(item, data) {
+  const publicKey = getStorePublicKey()
   let newItem = Object.assign({}, item)
   let creator = data['ProfilesFound'][0]
   let coinEntry = creator['CoinEntry']
@@ -11,6 +12,12 @@ function mergeDataWalletPortfolioItem(item, data) {
   newItem.publicKey = creator['PublicKeyBase58Check']
   newItem.isVerified = creator['IsVerified']
   newItem.coinPriceBitCloutNanos = creator['CoinPriceBitCloutNanos']
+
+  creator['UsersThatHODL'].forEach((userThatHODL, i) => {
+    if (userThatHODL['HODLerPublicKeyBase58Check'] === publicKey) {
+      newItem.balanceNanos = userThatHODL['BalanceNanos']
+    }
+  })
 
   newItem.coinEntry = {
     creatorBasisPoints: coinEntry['CreatorBasisPoints'],
