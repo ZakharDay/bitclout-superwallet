@@ -10,25 +10,37 @@ import {
 function modifyHtmlSidebarOnFirstLoad(creatorList) {
   const publicKey = getStorePublicKey()
   const bitCloutPrice = getStoreBitCloutPrice()
+  const sidebar = document.querySelector('.global__sidebar__inner')
+  const balanceBox = document.querySelector('.right-bar-creators__balance-box')
+  const walletTrackerWrapper = document.querySelector('.walletTrackerWrapper')
 
-  let heading = document.querySelector(
-    '.global__sidebar__inner .fs-15px.text-grey5.font-weight-bold.mb-15px'
-  )
+  const wrapper = document.createElement('div')
+  wrapper.classList.add('watchListWrapper')
+  const header = document.createElement('header')
+  header.classList.add('watchListHeader')
+  const container = document.createElement('section')
+  container.classList.add('watchListContainer')
+  container.style.fontSize = '12px'
+  container.style.marginBottom = '20px'
+  container.style.display = 'flex'
+  container.style.margin = '0 0 20px'
+  container.style.setProperty('flex-direction', 'column')
+  const heading = document.createElement('div')
+  heading.classList.add('fs-15px', 'text-grey5', 'font-weight-bold', 'mb-15px')
+  heading.innerText = 'Your Watch List'
 
-  let wrapper = document.getElementsByTagName(
-    'right-bar-creators-leaderboard'
-  )[0]
+  header.appendChild(heading)
+  // container.appendChild(loader)
+  wrapper.appendChild(header)
+  wrapper.appendChild(container)
 
-  let headingClone = heading.cloneNode(true)
-  headingClone.innerHTML = 'Your Watch List'
-
-  let wrapperClone = wrapper.cloneNode(true)
-  wrapperClone.classList.add('sidebarCreatorList')
-  wrapperClone.style.marginBottom = '20px'
-  wrapperClone.innerHTML = ''
-
-  heading.parentNode.insertBefore(headingClone, heading)
-  heading.parentNode.insertBefore(wrapperClone, heading)
+  if (!walletTrackerWrapper) {
+    console.log('first')
+    sidebar.insertBefore(wrapper, balanceBox.nextSibling)
+  } else {
+    console.log('second', walletTrackerWrapper)
+    sidebar.insertBefore(wrapper, walletTrackerWrapper.nextSibling)
+  }
 
   creatorList.forEach((creatorListItem, i) => {
     getApiSidebarCreatorCoinData(creatorListItem, i)
@@ -36,17 +48,14 @@ function modifyHtmlSidebarOnFirstLoad(creatorList) {
 }
 
 function updateHtmlSidebar(data, order) {
-  let creator = data['ProfilesFound'][0]
-  let username = creator['Username']
-  let coinEntry = creator['CoinEntry']
-  let wrapper = document.getElementsByClassName('sidebarCreatorList')[0]
-  let creatorListItemElement = getHtmlCreatorListItemElement()
-  let sidebarItem = mergeDataWalletPortfolioItem({}, data)
-  let creatorCoinPrice = calcAndFormatRealCoinPrice(sidebarItem)
+  const creator = data['ProfilesFound'][0]
+  const username = creator['Username']
+  const coinEntry = creator['CoinEntry']
+  const container = document.querySelector('.watchListContainer')
+  const creatorListItemElement = getHtmlCreatorListItemElement()
+  const sidebarItem = mergeDataWalletPortfolioItem({}, data)
+  const creatorCoinPrice = calcAndFormatRealCoinPrice(sidebarItem)
 
-  wrapper.style.display = 'flex'
-  wrapper.style.margin = '0 0 20px'
-  wrapper.style.setProperty('flex-direction', 'column')
   creatorListItemElement.href = `https://bitclout.com/u/${username}`
   creatorListItemElement.style.order = `${order}`
   creatorListItemElement.childNodes[0].style.backgroundImage = `url("${creator['ProfilePic']}")`
@@ -61,15 +70,13 @@ function updateHtmlSidebar(data, order) {
     ''
   )
 
-  wrapper.appendChild(creatorListItemElement)
+  container.appendChild(creatorListItemElement)
 }
 
 function getHtmlCreatorListItemElement() {
-  let wrapper = document.getElementsByTagName(
-    'right-bar-creators-leaderboard'
-  )[1]
+  const wrapper = document.querySelector('right-bar-creators-leaderboard')
 
-  let sidebarCreatorListItemElement = wrapper.childNodes[1].cloneNode(true)
+  const sidebarCreatorListItemElement = wrapper.childNodes[1].cloneNode(true)
   sidebarCreatorListItemElement.href = ''
   sidebarCreatorListItemElement.classList.add('creatorListItem')
   sidebarCreatorListItemElement.childNodes[0].style.backgroundImage = ''

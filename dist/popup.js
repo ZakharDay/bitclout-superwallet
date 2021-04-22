@@ -23,6 +23,7 @@ trackCreatorsButton.addEventListener('click', async () => {
   })
 })
 
+// TODO: possible need to remove
 function trackCreatorsInjected() {
   chrome.storage.sync.get('creatorList', ({ creatorList }) => {
     trackCreators(creatorList)
