@@ -63,6 +63,10 @@ function waitAsyncPageLoad() {
   const urlPartSecondLetter = urlPart.charAt(1)
   const firstLettersAccepted = ['w', 'u', 'n', 'b']
 
+  document.addEventListener('click', () => {
+    initModalCatcher()
+  })
+
   if (firstLettersAccepted.includes(urlPartFirstLetter)) {
     let detectionElement = document.getElementsByClassName(
       'global__center__inner'
@@ -88,6 +92,19 @@ function waitAsyncPageLoad() {
         waitAsyncPageLoad()
       }, 1000)
     }
+  }
+}
+
+function initModalCatcher() {
+  const textarea = document.querySelector('modal-container textarea')
+  const button = document.querySelector('modal-container .btn.btn-primary')
+
+  if (textarea && button) {
+    textarea.addEventListener('keydown', (e) => {
+      if (e.metaKey === true && e.key === 'Enter') {
+        button.click()
+      }
+    })
   }
 }
 

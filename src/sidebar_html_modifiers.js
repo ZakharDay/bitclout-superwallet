@@ -35,10 +35,10 @@ function modifyHtmlSidebarOnFirstLoad(creatorList) {
   wrapper.appendChild(container)
 
   if (!walletTrackerWrapper) {
-    console.log('first')
+    // console.log('first')
     sidebar.insertBefore(wrapper, balanceBox.nextSibling)
   } else {
-    console.log('second', walletTrackerWrapper)
+    // console.log('second', walletTrackerWrapper)
     sidebar.insertBefore(wrapper, walletTrackerWrapper.nextSibling)
   }
 

@@ -80,15 +80,16 @@ function addHtmlWalletUpdateButton() {
 
   forceWalletUpdateButton.classList.add('forceWalletUpdateButton')
   forceWalletUpdateButton.innerHTML = 'Update wallet'
-  forceWalletUpdateButton.style.width = '180px'
-  forceWalletUpdateButton.style.height = '40px'
+  forceWalletUpdateButton.style.width = '160px'
+  forceWalletUpdateButton.style.height = '36px'
   forceWalletUpdateButton.style.marginRight = '15px'
   forceWalletUpdateButton.style.backgroundColor = '#005bff'
   forceWalletUpdateButton.style.borderRadius = '5px'
   forceWalletUpdateButton.style.textAlign = 'center'
-  forceWalletUpdateButton.style.lineHeight = '40px'
+  forceWalletUpdateButton.style.lineHeight = '36px'
   forceWalletUpdateButton.style.color = 'white'
   forceWalletUpdateButton.style.cursor = 'pointer'
+  forceWalletUpdateButton.style.fontSize = '14px'
 
   forceWalletUpdateButton.addEventListener('click', () => {
     prepareHtmlWalletForNextDataLoad().then(() => updateDataWalletPortfolio())
