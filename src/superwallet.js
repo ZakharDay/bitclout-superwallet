@@ -27,7 +27,8 @@ import {
 
 import {
   addHtmlProfileBitCloutPulseLink,
-  addHtmlProfileFounderRewardPercentage
+  addHtmlProfileFounderRewardPercentage,
+  prepareHtmlProfileTabs
 } from './profile_html_modifiers'
 
 import {
@@ -144,6 +145,8 @@ function initProfilePage() {
         addHtmlProfileBitCloutPulseLink(item, creatorProfileTopCard)
         addHtmlProfileFounderRewardPercentage(item)
       })
+
+      prepareHtmlProfileTabs()
     }
   } else {
     setTimeout(() => {

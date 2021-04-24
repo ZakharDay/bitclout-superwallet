@@ -46,7 +46,120 @@ function addHtmlProfileFounderRewardPercentage(data) {
     .appendChild(wrapper)
 }
 
+function prepareHtmlProfileTabs() {
+  const profileWrapper = document.querySelector(
+    'creator-profile-details > .flex-grow-1'
+  )
+
+  const wrapper = document.querySelector('tab-selector > div.d-flex')
+  wrapper.classList.add('profileTabsWrapper')
+
+  const postsTab = document.querySelector(
+    'tab-selector > div.d-flex > div.d-flex:first-child'
+  )
+
+  const postsTabText = document.querySelector(
+    'tab-selector > div.d-flex > div.d-flex:first-child > div.d-flex:first-child'
+  )
+
+  const postsTabLine = document.querySelector(
+    'tab-selector > div.d-flex > div.d-flex:first-child > div:last-child'
+  )
+
+  const coinTab = document.querySelector(
+    'tab-selector > div.d-flex > div.d-flex:nth-child(2)'
+  )
+
+  const coinTabText = document.querySelector(
+    'tab-selector > div.d-flex > div.d-flex:nth-child(2) > div.d-flex:first-child'
+  )
+
+  const coinTabLine = document.querySelector(
+    'tab-selector > div.d-flex > div.d-flex:nth-child(2) > div:last-child'
+  )
+
+  const walletTab = document.createElement('div')
+  // prettier-ignore
+  walletTab.classList.add('d-flex', 'flex-column', 'align-items-center', 'h-100', 'pl-15px', 'pr-15px')
+  const walletTabText = document.createElement('div')
+  // prettier-ignore
+  walletTabText.classList.add('d-flex', 'h-100', 'align-items-center', 'fs-15px', 'fc-muted')
+  walletTabText.innerText = 'Creator Wallet'
+  const walletTabLine = document.createElement('div')
+  walletTabLine.classList.add('tab-underline-inactive')
+  walletTabLine.style.width = '50px'
+
+  postsTab.addEventListener('click', () => {
+    const walletTabContainer = document.querySelector('.walletTabContainer')
+
+    if (walletTabContainer) {
+      walletTabContainer.remove()
+    }
+
+    walletTabText.classList.remove('fc-default')
+    walletTabText.classList.add('fc-muted')
+    walletTabLine.classList.remove('tab-underline-active')
+    walletTabLine.classList.add('tab-underline-inactive')
+  })
+
+  coinTab.addEventListener('click', () => {
+    const walletTabContainer = document.querySelector('.walletTabContainer')
+
+    if (walletTabContainer) {
+      walletTabContainer.remove()
+    }
+
+    walletTabText.classList.remove('fc-default')
+    walletTabText.classList.add('fc-muted')
+    walletTabLine.classList.remove('tab-underline-active')
+    walletTabLine.classList.add('tab-underline-inactive')
+  })
+
+  walletTab.addEventListener('click', () => {
+    const walletTabContainer = document.createElement('div')
+    // prettier-ignore
+    walletTabContainer.classList.add('w-100', 'd-flex', 'flex-column', 'walletTabContainer')
+    walletTabContainer.innerText = 'THIS IS A CONTAINER'
+
+    console.log('click')
+    walletTabLine.classList.remove('tab-underline-inactive')
+    walletTabLine.classList.add('tab-underline-active')
+
+    postsTabText.classList.remove('fc-default')
+    postsTabText.classList.add('fc-muted')
+    postsTabLine.classList.remove('tab-underline-active')
+    postsTabLine.classList.add('tab-underline-inactive')
+
+    coinTabText.classList.remove('fc-default')
+    coinTabText.classList.add('fc-muted')
+    coinTabLine.classList.remove('tab-underline-active')
+    coinTabLine.classList.add('tab-underline-inactive')
+
+    const postsTabContainer = document.querySelector(
+      'creator-profile-details > .flex-grow-1 > div:last-child'
+    )
+    const coinTabContainer = document.querySelector(
+      'creator-profile-details > .flex-grow-1 > div:last-child'
+    )
+
+    if (postsTabContainer) {
+      // postsTabContainer.style.backgroundColor = 'red'
+      postsTabContainer.remove()
+    } else if (coinTabContainer) {
+      // coinTabContainer.style.backgroundColor = 'red'
+      coinTabContainer.remove()
+    }
+
+    profileWrapper.appendChild(walletTabContainer)
+  })
+
+  walletTab.appendChild(walletTabText)
+  walletTab.appendChild(walletTabLine)
+  wrapper.appendChild(walletTab)
+}
+
 export {
   addHtmlProfileBitCloutPulseLink,
-  addHtmlProfileFounderRewardPercentage
+  addHtmlProfileFounderRewardPercentage,
+  prepareHtmlProfileTabs
 }
