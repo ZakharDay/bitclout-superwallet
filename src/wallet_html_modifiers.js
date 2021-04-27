@@ -104,7 +104,7 @@ function modifyHtmlWalletGridOnFirstLoad() {
   )
 
   const walletPortfolioHeaderName = document.querySelector(
-    '.row.no-gutters.d-flex.align-items-center.fc-muted.border-bottom.border-color-grey.p-15px .col.mb-0'
+    '.row.no-gutters.d-flex.align-items-center.fc-muted.border-bottom.border-color-grey.pl-15px.py-15px .col.mb-0'
   )
 
   // const walletPortfolioHeaderPrice = document.querySelector(
@@ -112,7 +112,7 @@ function modifyHtmlWalletGridOnFirstLoad() {
   // )
 
   const walletPortfolioHeaderShare = document.querySelector(
-    '.row.no-gutters.d-flex.align-items-center.fc-muted.border-bottom.border-color-grey.p-15px .col-4.mb-0'
+    '.row.no-gutters.d-flex.align-items-center.fc-muted.border-bottom.border-color-grey.pl-15px.py-15px .col-4.mb-0'
   )
 
   const walletPortfolioHeaderInfoIcon = walletPortfolioHeaderShare.childNodes[1]
@@ -158,7 +158,7 @@ function modifyHtmlWalletGridOnFirstLoad() {
   totalPriceWrapper.appendChild(totalPriceInBitCloutCell)
 
   walletPortfolioHeaderName.classList.remove('col')
-  walletPortfolioHeaderName.classList.add('col-5')
+  walletPortfolioHeaderName.classList.add('col-6')
 
   walletPortfolioHeaderShare.classList.remove('col-4')
   walletPortfolioHeaderShare.classList.add('col-3')
@@ -179,7 +179,7 @@ function modifyHtmlWalletGridOnFirstLoad() {
           row.childNodes.forEach((cell, i) => {
             if (i === 0) {
               cell.classList.remove('col')
-              cell.classList.add('col-5')
+              cell.classList.add('col-6')
 
               cell.childNodes.forEach((aPart, i) => {
                 if (aPart.classList.contains('holdings__avatar')) {
@@ -271,13 +271,13 @@ function modifyHtmlWalletGridOnFirstLoad() {
               cell.appendChild(assetsInUsdCell)
               cell.appendChild(assetsInBitCloutCell)
             } else if (i === 3) {
-              cell.childNodes[1].remove()
-              cell.style.setProperty('flex-direction', 'column')
-              cell.classList.remove('align-items-center')
-              cell.classList.add('align-items-end')
-              cell.appendChild(cell.childNodes[0])
-              cell.childNodes[0].style.color = 'black'
-              cell.childNodes[1].classList.add('fs-12px')
+              // cell.childNodes[1].remove()
+              // cell.style.setProperty('flex-direction', 'column')
+              // cell.classList.remove('align-items-center')
+              // cell.classList.add('align-items-end')
+              // cell.appendChild(cell.childNodes[0])
+              // cell.childNodes[0].style.color = 'black'
+              // cell.childNodes[1].classList.add('fs-12px')
             }
           })
         }
