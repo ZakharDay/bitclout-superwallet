@@ -51,8 +51,8 @@ function prepareHtmlProfileTabs() {
     'creator-profile-details > .flex-grow-1'
   )
 
-  const wrapper = document.querySelector('tab-selector > div.d-flex')
-  wrapper.classList.add('profileTabsWrapper')
+  const profileTabsWrapper = document.querySelector('tab-selector > div.d-flex')
+  profileTabsWrapper.classList.add('profileTabsWrapper')
 
   const postsTab = document.querySelector(
     'tab-selector > div.d-flex > div.d-flex:first-child'
@@ -150,12 +150,14 @@ function prepareHtmlProfileTabs() {
       coinTabContainer.remove()
     }
 
+    URLSearchParams.delete('tab')
+    console.log('yo')
     profileWrapper.appendChild(walletTabContainer)
   })
 
   walletTab.appendChild(walletTabText)
   walletTab.appendChild(walletTabLine)
-  wrapper.appendChild(walletTab)
+  profileTabsWrapper.appendChild(walletTab)
 }
 
 export {
