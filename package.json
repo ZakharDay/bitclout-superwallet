@@ -20,6 +20,12 @@
   },
   "homepage": "https://github.com/ZakharDay/bitclout-superwallet#readme",
   "devDependencies": {
+    "css-loader": "^5.2.4",
+    "html-loader": "^2.1.2",
+    "html-webpack-plugin": "^5.3.1",
+    "mini-css-extract-plugin": "^1.6.0",
+    "sass": "^1.32.12",
+    "sass-loader": "^11.0.1",
     "webpack": "^5.33.2",
     "webpack-cli": "^4.6.0",
     "webpack-dev-server": "^3.11.2",

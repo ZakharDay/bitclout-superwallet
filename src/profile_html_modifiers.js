@@ -150,8 +150,16 @@ function prepareHtmlProfileTabs() {
       coinTabContainer.remove()
     }
 
-    URLSearchParams.delete('tab')
-    console.log('yo')
+    let url = new URL(window.location)
+    // let params = new URLSearchParams(url.search)
+    // params.set('tab', 'creator-wallet')
+
+    url.search = '?tab=creator-wallet'
+
+    window.history.pushState('', '', url)
+
+    // window.location.href =
+    console.log('yo', url, url.href, url.search)
     profileWrapper.appendChild(walletTabContainer)
   })
 

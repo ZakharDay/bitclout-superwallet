@@ -1,0 +1,98 @@
+:root {
+  --blue: #005bff;
+  --grey: #777;
+  --black: #222;
+  --border: #dee2e6;
+  --red1: #ff5252;
+  --red2: #ff9c9c;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  width: 380px;
+  margin: 0;
+  padding: 51px 0 0 0;
+  font-family: 'Roboto Mono', Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--black);
+}
+
+.tabsWrapper {
+  & > * {
+    padding: 0 15px;
+  }
+
+  .tabContainer {
+    display: none;
+    min-height: 500px;
+    max-height: 500px;
+    overflow-y: scroll;
+
+    &.active {
+      display: block;
+    }
+  }
+
+  .tabHeader {
+    height: 61px;
+    padding: 15px 0;
+    font-size: 20px;
+    font-weight: bold;
+    line-height: 1.5;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .tabItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 51px;
+    padding: 10px;
+    border-bottom: 1px solid var(--border);
+
+    &:last-child {
+      border: none;
+    }
+
+    .leftWrapper {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+    }
+
+    .userPic {
+      width: 30px;
+      height: 30px;
+      background-size: cover;
+      background-position: center;
+    }
+
+    .userName {
+      margin-left: 8px;
+      font-size: 15px;
+      color: var(--black);
+    }
+
+    .userRemove {
+      font-size: 15px;
+      color: var(--grey);
+      cursor: pointer;
+    }
+  }
+}
+
+#preloaderContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  div {
+    font-size: 15px;
+    color: var(--grey);
+    text-align: center;
+  }
+}
