@@ -46,6 +46,10 @@ function getApiWalletPortfolioItemData(item) {
       .then((response) => response.json())
       .then((data) => {
         resolve(data)
+
+        // if (process.env.NODE_ENV === 'development') {
+        //   console.log('Success:', data)
+        // }
       })
       .catch((error) => {
         resolve(error)
@@ -85,7 +89,10 @@ function getApiCreatorCoinBuyOrSellData(creatorData) {
       .then((response) => response.json())
       .then((data) => {
         resolve(data)
-        // console.log('Success:', data)
+
+        // if (process.env.NODE_ENV === 'development') {
+        //   console.log('Success:', data)
+        // }
       })
       .catch((error) => {
         console.error('Error:', error)
@@ -127,7 +134,10 @@ function getApiSidebarCreatorCoinData(username, order) {
     .then((response) => response.json())
     .then((data) => {
       updateHtmlSidebar(data, order)
+
+      // if (process.env.NODE_ENV === 'development') {
       // console.log('Success:', data)
+      // }
     })
     .catch((error) => {
       console.error('Error:', error)

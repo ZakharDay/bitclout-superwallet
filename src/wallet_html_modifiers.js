@@ -401,6 +401,7 @@ function updateHtmlWalletPortfolioItemShareInUsdCell(item) {
     element.innerText = '–'
   } else {
     element.innerText = calcAndFormatPortfolioItemPriceInUsd(shareInNanos)
+    // console.log(calcAndFormatPortfolioItemPriceInUsd(shareInNanos))
   }
 }
 
@@ -427,6 +428,8 @@ function updateHtmlWalletPortfolioTotalPriceInUsdCell() {
       if (isAN(item.expectedBitCloutReturnedNanos)) {
         expectedTotalBitCloutReturnedNanos += item.expectedBitCloutReturnedNanos
       }
+
+      // console.log(item.expectedBitCloutReturnedNanos)
     })
 
     const total = calcAndFormatRealCoinPrice({
