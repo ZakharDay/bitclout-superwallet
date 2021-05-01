@@ -28,11 +28,13 @@ function calcPortfolioItemShare(userThatHODL) {
 
 function calcPortfolioItemPriceInUsd(nanos) {
   const bitCloutPrice = getStoreBitCloutPrice()
+  // console.log('bitCloutPrice', bitCloutPrice)
   return (nanos / 1000000000) * bitCloutPrice
 }
 
 function calcAndFormatPortfolioItemPriceInUsd(nanos) {
   let sharePriceInUsd = calcPortfolioItemPriceInUsd(nanos)
+  // console.log('sharePriceInUsd', sharePriceInUsd)
 
   sharePriceInUsd = sharePriceInUsd.toLocaleString(undefined, {
     maximumFractionDigits: 2,
