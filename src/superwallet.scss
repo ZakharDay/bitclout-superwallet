@@ -11,10 +11,6 @@
   --sw-icon-dark: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAOWSURBVHgB7Vo9bNNAFH52OsGAEF2btQwgUUZSiYmlCLo2FR2AAaR2TqSydKFSu5KBpSxIzUyQysCE1MwZ6EDWZoUhSJSBJOa+RC+Yk5343j0XIvWTrFSpfX7fu/d/Ca4+/hXRDCOkGcfME5gjZSxfD2jtTmg+ia5cCsxF1D0jOv0a0XE7og8t8/lFz2oDLR9YWQpptxxScX76vSCw9aZvSJE3vAlAwxC8XHK3xr13g+HlA28TalTm6GaRRKiujkj7kPByYmheKjwDJJ7fk4shfhIm4/PiOEAii+8kQSwBb78G4EdSZYieQqiUaiwN2FEQcYWIwMpSQNqA8KVFd3FEBG4s6BMAJAFBRECy1VlQvOauGBmBy/TfQESg+4NyQfene1EgInDSoVwgqY1EBD6f5tMDNdvntAP15mBYImsC2pcoRuYDRvjXH/2qSBvSgk5cD4CARj0PoD/ArkogJoBd2Dzoky+gBDQ3UjgTQBLj6hFOt3kg9wcI/3C/N/xEFm5UCnT/tlsyy9yRccWIC3/HXw4yaGxcCrx4W2k/j+/gE1nMaioBW/A44iSAUY8QGG0GEwWHcBwyUdm+3SoklidYd6PWM9GJ5ARQee6WC6nahflAoHhUwr0o+JgITyUgNJsbm2JaHwDh4WPTckMmE4JA1dWC0XC6Znnbm+3J0ak4HwzXSdpRgEM0riy+5TSVyGrrSEjY9s63P0svmEoTsyIQSINk3JKJADTFjgvA1n36WBujkDygo9bIDLHuM7NDL+oKTsywRyB4CRPxAUwFa4IEBwysGw8Ok+BkQrWnZmRo2r54iMviH0lIika1J6NgcXdncuQRE4CGkGwQXQ6PB7TfGDiblR21cD8EBwHAdVrnPFq0HZl3g4mARJpZ1ZsRbdf74+jCYZSjEUht191qItFsFMJ/2pkbv9jOnLZZ2TE9bi4M3HOr0iNXiIe7pcWA3lcLf31nZ2YkQZgbmwQIvzTjyHVrEGw/dy4EAGw/5qM2bP/ge2EyScnrwV5f1I0BXtNp2CzMwC4H1pdxwBEO///9LKK1Ujh2UhvxSCSBygEHIlOagJMAp/btKVQmtBs199MW3I+I5AsVAgiLLk7ITqsxGFCbkUOoR6/6mYRCrNfqp1WPWU860dREBKflok0D6ufESGZppcBRK/I+1LORy0E3hDy0+lnOxtrI7aQetTxP2tjJtad5QG4EICyHV02ntRFc/FrlH+M3CKTw0b3+uccAAAAASUVORK5CYII=');
 }
 
-body {
-  // background: blue;
-}
-
 .userExternalLinks {
   position: absolute;
 
@@ -22,7 +18,6 @@ body {
     z-index: 2;
 
     .superWalletIcon {
-      // display: none;
       z-index: 2;
     }
 
@@ -294,6 +289,123 @@ body {
         content: 'Watching';
         color: var(--superwallet);
       }
+    }
+  }
+
+  .walletTab {
+    position: relative;
+    padding-left: 37px;
+
+    &::before {
+      position: absolute;
+      display: block;
+      content: '';
+      width: 20px;
+      height: 20px;
+      top: 13px;
+      left: 12px;
+      background-image: var(--sw-icon-light);
+      background-size: cover;
+      filter: grayscale(100%);
+    }
+
+    &.active {
+      &::before {
+        filter: grayscale(0%);
+      }
+    }
+
+    .walletTabLine {
+      margin-left: -16px;
+    }
+  }
+
+  .walletTabContainer {
+    min-height: 150px;
+
+    &.loading {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: var(--grey);
+    }
+  }
+
+  .walletTabHeader {
+    width: calc(100% - 30px);
+    padding: 15px 0;
+    margin: 0 auto;
+    border-bottom: 1px solid var(--border);
+    font-size: 20px;
+    font-weight: bold;
+  }
+
+  .walletTabGridHeader {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    grid-column-gap: 0;
+    width: calc(100% - 30px);
+    padding: 15px 0;
+    margin: 0 auto;
+    border-bottom: 1px solid var(--border);
+    font-size: 15px;
+    color: var(--grey);
+
+    .userName {
+      grid-column: 1/7;
+    }
+
+    .coinPrice {
+      grid-column: 7/10;
+    }
+
+    .marketValue {
+      grid-column: 10/13;
+    }
+  }
+
+  .walletItem {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    grid-column-gap: 0;
+    width: calc(100% - 30px);
+    padding: 15px 10px;
+    margin: 0 auto;
+    border-bottom: 1px solid var(--border);
+    font-size: 15px;
+    color: var(--black);
+
+    &:last-child {
+      border: none;
+    }
+
+    .userCell {
+      display: flex;
+      align-items: center;
+      grid-column: 1/7;
+      color: var(--black);
+
+      .userPic {
+        width: 30px;
+        height: 30px;
+        margin-right: 10px;
+        border-radius: 3px;
+        background-size: cover;
+      }
+
+      .userName {
+        line-height: 30px;
+      }
+    }
+
+    .coinPrice {
+      grid-column: 7/10;
+      line-height: 30px;
+    }
+
+    .marketValue {
+      grid-column: 10/13;
+      line-height: 30px;
     }
   }
 }

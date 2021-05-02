@@ -36,4 +36,46 @@ function mergeDataWalletPortfolioItemShare(item, data) {
   return newItem
 }
 
-export { mergeDataWalletPortfolioItem, mergeDataWalletPortfolioItemShare }
+function prepareDataCreatorWallet(data) {
+  return new Promise(function (resolve, reject) {
+    const user = data['UserList'][0]
+    const profileEntry = user['ProfileEntryResponse']
+    let creatorWallet = []
+    let profile = {}
+
+    profile = {
+      username: profileEntry['Username'],
+      profilePic: profileEntry['ProfilePic'],
+      publicKey: user['PublicKeyBase58Check'],
+      founderReward: profileEntry['CoinEntry']['CreatorBasisPoints']
+    }
+
+    user['UsersYouHODL'].forEach((userYouHODL, i) => {
+      if (userYouHODL['BalanceNanos'] > 1) {
+        const creatorWalletItem = {
+          username: userYouHODL['ProfileEntryResponse']['Username'],
+          profilePic: userYouHODL['ProfileEntryResponse']['ProfilePic'],
+          balanceNanos: userYouHODL['BalanceNanos'],
+          coinPriceNanos:
+            userYouHODL['ProfileEntryResponse']['CoinPriceBitCloutNanos']
+        }
+
+        creatorWallet.push(creatorWalletItem)
+      }
+    })
+
+    // console.log(creatorWallet)
+
+    creatorWallet.sort((a, b) => (a.balanceNanos > b.balanceNanos ? -1 : 1))
+
+    // console.log(creatorWallet)
+
+    resolve({ profile, creatorWallet })
+  })
+}
+
+export {
+  mergeDataWalletPortfolioItem,
+  mergeDataWalletPortfolioItemShare,
+  prepareDataCreatorWallet
+}

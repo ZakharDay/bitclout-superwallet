@@ -67,7 +67,7 @@ function updateHtmlSidebar(data, order) {
     ''
   )
 
-  addHtmlUserExternalLinks(data, creatorListItemElement)
+  addHtmlUserExternalLinks(creatorListItemElement, data)
   container.appendChild(creatorListItemElement)
 }
 

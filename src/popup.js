@@ -26,7 +26,7 @@ function checkAndMigrateData() {
         })
 
         chrome.storage.sync.get('creatorList', ({ creatorList }) => {
-          console.log(creatorList)
+          // console.log(creatorList)
           if (creatorList && creatorList[0] != '') {
             // chrome.storage.sync.set({ userListToWatch: creatorList }, () => {
             fetchCreatorsForPopup(creatorList).then(() => {
@@ -63,7 +63,7 @@ function checkAndFetchData() {
     chrome.storage.sync.get((items) => {
       let unknownList = []
 
-      console.log(items)
+      // console.log(items)
 
       items['userListToWatch'].forEach((publicKey, i) => {
         if (items[publicKey]) {
@@ -159,7 +159,7 @@ function getApiProfileData(publicKey) {
       UsernamePrefix: ''
     }
 
-    console.log(publicKey, publicKey.length, publicKey.length < 55)
+    // console.log(publicKey, publicKey.length, publicKey.length < 55)
 
     if (publicKey.length === 55) {
       data['ReaderPublicKeyBase58Check'] = publicKey
@@ -171,7 +171,7 @@ function getApiProfileData(publicKey) {
       data['Username'] = publicKey
     }
 
-    console.log('Request', data)
+    // console.log('Request', data)
 
     fetch('https://api.bitclout.com/get-profiles', {
       method: 'POST',
@@ -184,13 +184,13 @@ function getApiProfileData(publicKey) {
       .then((data) => {
         resolve(data)
         if (process.env.NODE_ENV === 'development') {
-          console.log('Success:', data, publicKey)
+          console.log('DEV Success:', data, publicKey)
         }
       })
       .catch((error) => {
         // resolve(error)
         if (process.env.NODE_ENV === 'development') {
-          console.error('Error:', error, publicKey)
+          console.error('DEV Error:', error, publicKey)
         }
 
         getApiProfileData(publicKey)

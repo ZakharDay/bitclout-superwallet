@@ -1,18 +1,43 @@
-import { calcFounderRewardPercentage } from './calcs_and_formatters'
+import { updateDataCreatorWallet } from './actions'
 
-function addHtmlProfileFounderRewardPercentage(data) {
-  let wrapper = document.createElement('div')
+import {
+  calcFounderRewardPercentage,
+  calcAndFormatPortfolioItemPriceInUsd
+} from './calcs_and_formatters'
+
+import {
+  getStoreBitCloutPrice,
+  getStoreProfilePublicKey,
+  getStoreProfile,
+  getStoreCreatorWallet
+} from './store'
+
+function getHtmlProfilePublicKey() {
+  const publicKeyElement = document.querySelector(
+    '.creator-profile__ellipsis-restriction'
+  )
+
+  const publicKey = publicKeyElement.childNodes[
+    publicKeyElement.childNodes.length - 1
+  ].textContent.replace(/ /g, '')
+
+  return publicKey
+}
+
+function addHtmlProfileFounderRewardPercentage() {
+  const profile = getStoreProfile()
+  const wrapper = document.createElement('div')
+  const percent = document.createElement('div')
+  const label = document.createElement('div')
   wrapper.style.whitespace = 'nowrap'
-
-  let percent = document.createElement('div')
   percent.classList.add('font-weight-bold')
   percent.style.display = 'inline'
-  percent.innerText = calcFounderRewardPercentage(data)
-
-  let label = document.createElement('div')
   label.classList.add('fc-muted')
   label.style.display = 'inline'
   label.innerText = ' Founder Reward'
+
+  // TODO: Refactor
+  percent.innerText = profile.founderReward / 100 + '%'
 
   wrapper.appendChild(percent)
   wrapper.appendChild(label)
@@ -24,145 +49,12 @@ function addHtmlProfileFounderRewardPercentage(data) {
     .appendChild(wrapper)
 }
 
-function prepareHtmlProfileTabs() {
-  const profileWrapper = document.querySelector(
-    'creator-profile-details > .flex-grow-1'
-  )
-
-  const profileTabsWrapper = document.querySelector('tab-selector > div.d-flex')
-  profileTabsWrapper.classList.add('profileTabsWrapper')
-
-  const postsTab = document.querySelector(
-    'tab-selector > div.d-flex > div.d-flex:first-child'
-  )
-
-  const postsTabText = document.querySelector(
-    'tab-selector > div.d-flex > div.d-flex:first-child > div.d-flex:first-child'
-  )
-
-  const postsTabLine = document.querySelector(
-    'tab-selector > div.d-flex > div.d-flex:first-child > div:last-child'
-  )
-
-  const coinTab = document.querySelector(
-    'tab-selector > div.d-flex > div.d-flex:nth-child(2)'
-  )
-
-  const coinTabText = document.querySelector(
-    'tab-selector > div.d-flex > div.d-flex:nth-child(2) > div.d-flex:first-child'
-  )
-
-  const coinTabLine = document.querySelector(
-    'tab-selector > div.d-flex > div.d-flex:nth-child(2) > div:last-child'
-  )
-
-  const walletTab = document.createElement('div')
-  // prettier-ignore
-  walletTab.classList.add('d-flex', 'flex-column', 'align-items-center', 'h-100', 'pl-15px', 'pr-15px')
-  const walletTabText = document.createElement('div')
-  // prettier-ignore
-  walletTabText.classList.add('d-flex', 'h-100', 'align-items-center', 'fs-15px', 'fc-muted')
-  walletTabText.innerText = 'Creator Wallet'
-  const walletTabLine = document.createElement('div')
-  walletTabLine.classList.add('tab-underline-inactive')
-  walletTabLine.style.width = '50px'
-
-  postsTab.addEventListener('click', () => {
-    const walletTabContainer = document.querySelector('.walletTabContainer')
-
-    if (walletTabContainer) {
-      walletTabContainer.remove()
-    }
-
-    walletTabText.classList.remove('fc-default')
-    walletTabText.classList.add('fc-muted')
-    walletTabLine.classList.remove('tab-underline-active')
-    walletTabLine.classList.add('tab-underline-inactive')
-  })
-
-  coinTab.addEventListener('click', () => {
-    const walletTabContainer = document.querySelector('.walletTabContainer')
-
-    if (walletTabContainer) {
-      walletTabContainer.remove()
-    }
-
-    walletTabText.classList.remove('fc-default')
-    walletTabText.classList.add('fc-muted')
-    walletTabLine.classList.remove('tab-underline-active')
-    walletTabLine.classList.add('tab-underline-inactive')
-  })
-
-  walletTab.addEventListener('click', () => {
-    const walletTabContainer = document.createElement('div')
-    // prettier-ignore
-    walletTabContainer.classList.add('w-100', 'd-flex', 'flex-column', 'walletTabContainer')
-    walletTabContainer.innerText = 'THIS IS A CONTAINER'
-
-    console.log('click')
-    walletTabLine.classList.remove('tab-underline-inactive')
-    walletTabLine.classList.add('tab-underline-active')
-
-    postsTabText.classList.remove('fc-default')
-    postsTabText.classList.add('fc-muted')
-    postsTabLine.classList.remove('tab-underline-active')
-    postsTabLine.classList.add('tab-underline-inactive')
-
-    coinTabText.classList.remove('fc-default')
-    coinTabText.classList.add('fc-muted')
-    coinTabLine.classList.remove('tab-underline-active')
-    coinTabLine.classList.add('tab-underline-inactive')
-
-    const postsTabContainer = document.querySelector(
-      'creator-profile-details > .flex-grow-1 > div:last-child'
-    )
-    const coinTabContainer = document.querySelector(
-      'creator-profile-details > .flex-grow-1 > div:last-child'
-    )
-
-    if (postsTabContainer) {
-      // postsTabContainer.style.backgroundColor = 'red'
-      postsTabContainer.remove()
-    } else if (coinTabContainer) {
-      // coinTabContainer.style.backgroundColor = 'red'
-      coinTabContainer.remove()
-    }
-
-    let url = new URL(window.location)
-    // let params = new URLSearchParams(url.search)
-    // params.set('tab', 'creator-wallet')
-
-    url.search = '?tab=creator-wallet'
-
-    window.history.pushState('', '', url)
-
-    // window.location.href =
-    console.log('yo', url, url.href, url.search)
-    profileWrapper.appendChild(walletTabContainer)
-  })
-
-  walletTab.appendChild(walletTabText)
-  walletTab.appendChild(walletTabLine)
-  profileTabsWrapper.appendChild(walletTab)
-}
-
-function addHtmlUserWatchButton(item, creatorProfileTopCard) {
-  const wrapper = document.querySelector(
-    // '.js-creator-profile-top-card-container'
-    '.creator-profile__top-bar'
-  )
-
+function addHtmlProfileUserWatchButton(creatorProfileTopCard) {
+  const wrapper = document.querySelector('.creator-profile__top-bar')
   wrapper.style.setProperty('justify-content', 'flex-end')
   wrapper.style.setProperty('align-items', 'center')
 
-  const publicKeyElement = document.querySelector(
-    '.creator-profile__ellipsis-restriction'
-  )
-
-  const publicKey = publicKeyElement.childNodes[
-    publicKeyElement.childNodes.length - 1
-  ].textContent.replace(/ /g, '')
-
+  const publicKey = getStoreProfilePublicKey()
   const button = document.createElement('div')
   button.classList.add('watchButton')
 
@@ -200,8 +92,224 @@ function addHtmlUserWatchButton(item, creatorProfileTopCard) {
   })
 }
 
+function prepareHtmlProfileTabs() {
+  const profileWrapper = document.querySelector(
+    'creator-profile-details > .flex-grow-1'
+  )
+
+  const profileTabsWrapper = document.querySelector('tab-selector > div.d-flex')
+  profileTabsWrapper.classList.add('profileTabsWrapper')
+
+  const postsTab = document.querySelector(
+    'tab-selector > div.d-flex > div.d-flex:first-child'
+  )
+
+  const postsTabText = document.querySelector(
+    'tab-selector > div.d-flex > div.d-flex:first-child > div.d-flex:first-child'
+  )
+
+  const postsTabLine = document.querySelector(
+    'tab-selector > div.d-flex > div.d-flex:first-child > div:last-child'
+  )
+
+  const coinTab = document.querySelector(
+    'tab-selector > div.d-flex > div.d-flex:nth-child(2)'
+  )
+
+  const coinTabText = document.querySelector(
+    'tab-selector > div.d-flex > div.d-flex:nth-child(2) > div.d-flex:first-child'
+  )
+
+  const coinTabLine = document.querySelector(
+    'tab-selector > div.d-flex > div.d-flex:nth-child(2) > div:last-child'
+  )
+
+  const walletTab = document.createElement('div')
+  const walletTabText = document.createElement('div')
+  const walletTabLine = document.createElement('div')
+  // prettier-ignore
+  walletTab.classList.add('walletTab', 'd-flex', 'flex-column', 'align-items-center', 'h-100', 'pl-15px', 'pr-15px')
+  // prettier-ignore
+  walletTabText.classList.add('d-flex', 'h-100', 'align-items-center', 'fs-15px', 'fc-muted')
+  walletTabText.innerText = 'Creator Wallet'
+  walletTabLine.classList.add('walletTabLine', 'tab-underline-inactive')
+  walletTabLine.style.width = '50px'
+
+  postsTab.addEventListener('click', () => {
+    const walletTabContainer = document.querySelector('.walletTabContainer')
+
+    if (walletTabContainer) {
+      walletTabContainer.remove()
+    }
+
+    walletTab.classList.remove('active')
+    walletTabText.classList.remove('fc-default')
+    walletTabText.classList.add('fc-muted')
+    walletTabLine.classList.remove('tab-underline-active')
+    walletTabLine.classList.add('tab-underline-inactive')
+  })
+
+  coinTab.addEventListener('click', () => {
+    const walletTabContainer = document.querySelector('.walletTabContainer')
+
+    if (walletTabContainer) {
+      walletTabContainer.remove()
+    }
+
+    walletTab.classList.remove('active')
+    walletTabText.classList.remove('fc-default')
+    walletTabText.classList.add('fc-muted')
+    walletTabLine.classList.remove('tab-underline-active')
+    walletTabLine.classList.add('tab-underline-inactive')
+  })
+
+  walletTab.addEventListener('click', () => {
+    const postsTabContainer = document.querySelector(
+      'creator-profile-details > .flex-grow-1 > div:last-child'
+    )
+    const coinTabContainer = document.querySelector(
+      'creator-profile-details > .flex-grow-1 > div:last-child'
+    )
+
+    const walletTabContainer = document.createElement('div')
+    // prettier-ignore
+    walletTabContainer.classList.add('walletTabContainer', 'loading', 'w-100', 'd-flex', 'flex-column')
+    walletTabContainer.innerText = 'Preloading data...'
+
+    walletTab.classList.add('active')
+    walletTabText.classList.add('fc-default')
+    walletTabText.classList.remove('fc-muted')
+    walletTabLine.classList.remove('tab-underline-inactive')
+    walletTabLine.classList.add('tab-underline-active')
+
+    postsTabText.classList.remove('fc-default')
+    postsTabText.classList.add('fc-muted')
+    postsTabLine.classList.remove('tab-underline-active')
+    postsTabLine.classList.add('tab-underline-inactive')
+
+    coinTabText.classList.remove('fc-default')
+    coinTabText.classList.add('fc-muted')
+    coinTabLine.classList.remove('tab-underline-active')
+    coinTabLine.classList.add('tab-underline-inactive')
+
+    if (postsTabContainer) {
+      postsTabContainer.remove()
+    } else if (coinTabContainer) {
+      coinTabContainer.remove()
+    }
+
+    let url = new URL(window.location)
+    url.search = '?tab=creator-wallet'
+    window.history.pushState('', '', url)
+    profileWrapper.appendChild(walletTabContainer)
+
+    updateDataCreatorWallet()
+  })
+
+  walletTab.appendChild(walletTabText)
+  walletTab.appendChild(walletTabLine)
+  profileTabsWrapper.appendChild(walletTab)
+}
+
+function updateHtmlProfileCreatorWallet(data) {
+  const container = document.querySelector('.walletTabContainer')
+  container.classList.remove('loading')
+  container.innerHTML = ''
+
+  addHtmlProfileCreatorWalletHeader(container)
+    .then(() => addHtmlProfileCreatorWalletGridHeader(container))
+    .then(() => addHtmlProfileCreatorWalletItems(container))
+}
+
+function addHtmlProfileCreatorWalletHeader(container) {
+  return new Promise((resolve, reject) => {
+    const profile = getStoreProfile()
+    const header = document.createElement('div')
+    header.classList.add('walletTabHeader')
+    header.innerHTML = `Coins held by ${profile.username}`
+    container.appendChild(header)
+    resolve()
+  })
+}
+
+function addHtmlProfileCreatorWalletGridHeader(container) {
+  return new Promise((resolve, reject) => {
+    const header = document.createElement('div')
+    const userName = document.createElement('div')
+    const coinPrice = document.createElement('div')
+    const marketValue = document.createElement('div')
+
+    header.classList.add('walletTabGridHeader')
+    userName.classList.add('userName')
+    coinPrice.classList.add('coinPrice')
+    marketValue.classList.add('marketValue')
+
+    userName.innerText = 'Username'
+    coinPrice.innerText = 'Coin Price'
+    marketValue.innerText = 'Market Value'
+
+    header.appendChild(userName)
+    header.appendChild(coinPrice)
+    header.appendChild(marketValue)
+    container.appendChild(header)
+
+    resolve()
+  })
+}
+
+function addHtmlProfileCreatorWalletItems(container) {
+  const creatorWalletItems = getStoreCreatorWallet()
+  creatorWalletItems.forEach((item, i) => {
+    addHtmlProfileCreatorWalletItem(container, item)
+  })
+}
+
+function addHtmlProfileCreatorWalletItem(container, item) {
+  const bitCloutPrice = getStoreBitCloutPrice()
+  const walletItem = document.createElement('div')
+  const userCell = document.createElement('a')
+  const userPic = document.createElement('div')
+  const userName = document.createElement('div')
+  const coinPrice = document.createElement('div')
+  const marketValue = document.createElement('div')
+
+  walletItem.classList.add('walletItem')
+  userCell.classList.add('userCell')
+  userPic.classList.add('userPic')
+  userName.classList.add('userName')
+  coinPrice.classList.add('coinPrice')
+  marketValue.classList.add('marketValue')
+
+  userCell.href = `https://bitclout.com/u/${item.username}`
+  userPic.style.backgroundImage = `url(${item.profilePic})`
+  userName.innerText = item.username
+
+  // refactor
+  let coinPriceText = (item.coinPriceNanos * bitCloutPrice) / 1000000000
+
+  coinPriceText = coinPriceText.toLocaleString(undefined, {
+    maximumFractionDigits: 2,
+    minimumFractionDigits: 2
+  })
+
+  coinPrice.innerText = ['$', coinPriceText].join('')
+
+  marketValue.innerText = calcAndFormatPortfolioItemPriceInUsd(
+    item.balanceNanos
+  )
+
+  userCell.appendChild(userPic)
+  userCell.appendChild(userName)
+  walletItem.appendChild(userCell)
+  walletItem.appendChild(coinPrice)
+  walletItem.appendChild(marketValue)
+  container.appendChild(walletItem)
+}
+
 export {
+  getHtmlProfilePublicKey,
   addHtmlProfileFounderRewardPercentage,
+  addHtmlProfileUserWatchButton,
   prepareHtmlProfileTabs,
-  addHtmlUserWatchButton
+  updateHtmlProfileCreatorWallet
 }

@@ -1,4 +1,5 @@
 import './superwallet.scss'
+import { getStoreProfile } from './store'
 
 function injectHtmlCss() {
   const css = require(/* webpackMode: "eager" */ '../dist/superwallet.css?raw')
@@ -15,7 +16,7 @@ function injectHtmlCss() {
 
 function markHtmlBody(marker) {
   let cssClass = 'superwallet'
-  console.log(marker)
+  // console.log(marker)
 
   if (marker === 'b') {
     cssClass = 'swBrowse'
@@ -46,7 +47,7 @@ function clearElementsWithDash(elements) {
   }
 }
 
-function addHtmlUserExternalLinks(data, element) {
+function addHtmlUserExternalLinks(element, data) {
   const userExternalLinks = document.createElement('div')
   userExternalLinks.classList.add('userExternalLinks')
   const superWalletIcon = document.createElement('div')

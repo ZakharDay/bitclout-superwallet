@@ -1,4 +1,9 @@
-import { buyOrSellUrl, getProfilesUrl, getFollowsStateless } from './urls'
+import {
+  buyOrSellUrl,
+  getProfilesUrl,
+  getFollowsStateless,
+  getUsersUrl
+} from './urls'
 
 import {
   clearCoinPriceCells,
@@ -47,13 +52,15 @@ function getApiWalletPortfolioItemData(item) {
       .then((data) => {
         resolve(data)
 
-        // if (process.env.NODE_ENV === 'development') {
-        //   console.log('Success:', data)
-        // }
+        if (process.env.NODE_ENV === 'development') {
+          console.log('DEV Success:', data)
+        }
       })
       .catch((error) => {
-        resolve(error)
-        console.error('Error:', error)
+        // resolve(error)
+        if (process.env.NODE_ENV === 'development') {
+          console.error('DEV Error:', error)
+        }
       })
   })
 }
@@ -134,7 +141,7 @@ function getApiSidebarCreatorCoinData(userListToWatchItem, order) {
     UsernamePrefix: ''
   }
 
-  console.log('Request', userListToWatchItem, data)
+  // console.log('Request', userListToWatchItem, data)
 
   fetch(getProfilesUrl, {
     method: 'POST',
@@ -148,11 +155,13 @@ function getApiSidebarCreatorCoinData(userListToWatchItem, order) {
       updateHtmlSidebar(data, order)
 
       if (process.env.NODE_ENV === 'development') {
-        console.log('Success:', data)
+        console.log('DEV Success:', data)
       }
     })
     .catch((error) => {
-      console.error('Error:', error)
+      if (process.env.NODE_ENV === 'development') {
+        console.error('DEV Error:', error)
+      }
     })
 }
 
@@ -192,46 +201,39 @@ function getApiPostMentionData(prefix) {
   })
 }
 
-// function getApiCreatorTransactionsData(publicKey) {
-//   const publicKey = getStorePublicKey()
-//
-//   const data = {
-//     AddGlobalFeedBool: false,
-//     Description: '',
-//     FetchUsersThatHODL: false,
-//     ModerationType: '',
-//     NumToFetch: 6,
-//     OrderBy: '',
-//     PublicKeyBase58Check: '',
-//     ReaderPublicKeyBase58Check: publicKey,
-//     Username: '',
-//     UsernamePrefix: prefix
-//   }
-//
-//   return new Promise(function (resolve, reject) {
-//     fetch(getProfilesUrl, {
-//       method: 'POST',
-//       headers: {
-//         'Content-Type': 'application/json'
-//       },
-//       body: JSON.stringify(data)
-//     })
-//       .then((response) => response.json())
-//       .then((data) => {
-//         resolve(data)
-//         // console.log('Success:', data)
-//       })
-//       .catch((error) => {
-//         resolve()
-//         console.error('Error:', error)
-//       })
-//   })
-// }
+function getApiUsersData(publicKeys) {
+  return new Promise(function (resolve, reject) {
+    const data = {
+      PublicKeysBase58Check: publicKeys
+    }
+
+    // console.log('publicKeys', publicKeys)
+
+    fetch(getUsersUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        // console.log('Success getUsers:', data)
+        resolve(data)
+      })
+      .catch((error) => {
+        if (process.env.NODE_ENV === 'development') {
+          console.error('DEV Error:', error)
+        }
+      })
+  })
+}
 
 export {
   getApiWalletPortfolioItemData,
   getApiCreatorCoinBuyOrSellData,
   getChromeStorageWatchedCreatorsData,
   getApiSidebarCreatorCoinData,
-  getApiPostMentionData
+  getApiPostMentionData,
+  getApiUsersData
 }

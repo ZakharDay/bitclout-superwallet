@@ -1,6 +1,9 @@
 let publicKey = ''
+let profilePublicKey = ''
 let bitCloutPrice = 0
 let walletPortfolio = []
+let creatorWallet = []
+let profile = {}
 
 let mention = {
   suggest: false,
@@ -48,6 +51,36 @@ function setStoreMention(newMention) {
   })
 }
 
+function getStoreProfilePublicKey() {
+  return profilePublicKey
+}
+
+function setStoreProfilePublicKey(newProfilePublicKey) {
+  profilePublicKey = newProfilePublicKey
+}
+
+function getStoreProfile() {
+  return profile
+}
+
+function setStoreProfile(newProfile) {
+  return new Promise(function (resolve, reject) {
+    profile = newProfile
+    resolve()
+  })
+}
+
+function getStoreCreatorWallet() {
+  return creatorWallet
+}
+
+function setStoreCreatorWallet(newCreatorWallet) {
+  return new Promise(function (resolve, reject) {
+    creatorWallet = newCreatorWallet
+    resolve()
+  })
+}
+
 export {
   getStorePublicKey,
   setStorePublicKey,
@@ -56,5 +89,11 @@ export {
   getStoreWalletPortfolio,
   setStoreWalletPortfolio,
   getStoreMention,
-  setStoreMention
+  setStoreMention,
+  getStoreProfilePublicKey,
+  setStoreProfilePublicKey,
+  getStoreProfile,
+  setStoreProfile,
+  getStoreCreatorWallet,
+  setStoreCreatorWallet
 }

@@ -328,7 +328,7 @@ function addHtmlWalletPortfolioItemUserExternalLinks(item) {
 
   if (bitCloutPulseLink === null) {
     const element = document.getElementById(`${item.username}`)
-    addHtmlUserExternalLinks(item, element)
+    addHtmlUserExternalLinks(element, item)
   }
 }
 

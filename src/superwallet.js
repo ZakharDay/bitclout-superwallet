@@ -1,6 +1,10 @@
 import getCaretCoordinates from 'textarea-caret'
 import { updateDataWalletPortfolio } from './actions'
-import { mergeDataWalletPortfolioItem } from './data_modifiers'
+
+import {
+  mergeDataWalletPortfolioItem,
+  prepareDataCreatorWallet
+} from './data_modifiers'
 
 import {
   injectHtmlCss,
@@ -18,7 +22,8 @@ import {
 import {
   getApiWalletPortfolioItemData,
   getChromeStorageWatchedCreatorsData,
-  getApiPostMentionData
+  getApiPostMentionData,
+  getApiUsersData
 } from './server_requests'
 
 import {
@@ -26,13 +31,18 @@ import {
   setStoreBitCloutPrice,
   setStoreWalletPortfolio,
   getStoreMention,
-  setStoreMention
+  setStoreMention,
+  setStoreProfilePublicKey,
+  setStoreCreatorWallet,
+  getStoreProfile,
+  setStoreProfile
 } from './store'
 
 import {
+  getHtmlProfilePublicKey,
   addHtmlProfileFounderRewardPercentage,
   prepareHtmlProfileTabs,
-  addHtmlUserWatchButton
+  addHtmlProfileUserWatchButton
 } from './profile_html_modifiers'
 
 import {
@@ -131,27 +141,38 @@ function initWalletPage() {
 
 function initProfilePage() {
   const pathname = window.location.pathname
-  const detectionElement = document.getElementsByClassName('bitCloutPulseLink')
+  const detectionElement = document.getElementsByClassName('userExternalLinks')
   const creatorProfileTopCard = document.querySelector(
     '.global__center__inner .position-relative'
   )
 
   if (detectionElement.length == 0 && creatorProfileTopCard != null) {
     const secondDetectionElement = document.getElementsByClassName(
-      'bitCloutPulseLink'
+      'userExternalLinks'
     )
 
     if (secondDetectionElement.length == 0) {
-      let item = {}
-      item.username = pathname.substr(3)
-      getApiWalletPortfolioItemData(item).then((data) => {
-        item = mergeDataWalletPortfolioItem(item, data)
-        addHtmlUserExternalLinks(item, creatorProfileTopCard)
-        addHtmlProfileFounderRewardPercentage(item)
-        addHtmlUserWatchButton(item, creatorProfileTopCard)
-      })
+      const bitCloutPrice = getHtmlBitCloutPrice()
+      setStoreBitCloutPrice(bitCloutPrice)
 
-      prepareHtmlProfileTabs()
+      const publicKey = getHtmlProfilePublicKey()
+      setStoreProfilePublicKey(publicKey)
+
+      getApiUsersData([publicKey])
+        .then((data) => prepareDataCreatorWallet(data))
+        .then((data) =>
+          Promise.all([
+            setStoreCreatorWallet(data.creatorWallet),
+            setStoreProfile(data.profile)
+          ])
+        )
+        .then(() => {
+          const profile = getStoreProfile()
+          addHtmlUserExternalLinks(creatorProfileTopCard, profile)
+          addHtmlProfileFounderRewardPercentage()
+          addHtmlProfileUserWatchButton(creatorProfileTopCard)
+          prepareHtmlProfileTabs()
+        })
     }
   } else {
     setTimeout(() => {
@@ -312,156 +333,6 @@ function initBrowsePage() {
     }
   })
 }
-//
-//
-//
-//
-//
-//
-//
-function getLast() {
-  fetch('https://api.bitclout.com/api/v1')
-    .then((response) => response.json())
-    .then((data) => {
-      console.log('getLast', data)
-    })
-}
-
-function getTransaction(publicKey) {
-  const requestData = {
-    PublicKeyBase58Check: publicKey
-    // IsMempool: true
-  }
-
-  fetch('https://api.bitclout.com/api/v1/transaction-info', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(requestData)
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      console.log('Success getTransaction:', data)
-
-      let creatorCoinTransactions = []
-
-      data['Transactions'].forEach((transaction, i) => {
-        if (transaction['TransactionType'] === 'CREATOR_COIN') {
-          creatorCoinTransactions.push(transaction)
-        }
-      })
-
-      console.log('creatorCoinTransactions', creatorCoinTransactions)
-    })
-    .catch((error) => {
-      console.error('Error:', error)
-    })
-}
-
-function getBlock(hashHex) {
-  const data = {
-    FullBlock: true,
-    HashHex: hashHex
-  }
-
-  fetch('https://api.bitclout.com/api/v1/block', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(data)
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      console.log('Success getBlock:', data)
-    })
-    .catch((error) => {
-      console.error('Error:', error)
-    })
-}
-
-function getProfile(creatorPublicKey, balanceNanos) {
-  const publicKey = getStorePublicKey()
-  const bitCloutPrice = getStoreBitCloutPrice()
-
-  const data = {
-    AddGlobalFeedBool: false,
-    Description: '',
-    FetchUsersThatHODL: true,
-    ModerationType: '',
-    NumToFetch: 1,
-    OrderBy: 'newest_last_post',
-    PublicKeyBase58Check: creatorPublicKey,
-    ReaderPublicKeyBase58Check: publicKey,
-    Username: '',
-    UsernamePrefix: ''
-  }
-
-  fetch('https://api.bitclout.com/get-profiles', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(data)
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      console.log(
-        data['ProfilesFound'][0]['Username'],
-        calcAndFormatPortfolioItemPriceInBitClout(balanceNanos),
-        calcAndFormatPortfolioItemPriceInUsd(balanceNanos)
-      )
-    })
-    .catch((error) => {
-      console.error('Error:', error)
-    })
-}
-
-function getUsers(publicKeys) {
-  const data = {
-    PublicKeysBase58Check: publicKeys
-  }
-
-  fetch('https://api.bitclout.com/get-users-stateless', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(data)
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      console.log('Success getUsers:', data)
-
-      // data['userData']['userList'][0]['UsersYouHODL'].forEach(
-      //   (userYouHODL, i) => {
-      //     getProfile(
-      //       userYouHODL['CreatorPublicKeyBase58Check'],
-      //       userYouHODL['BalanceNanos']
-      //     )
-      //   }
-      // )
-    })
-    .catch((error) => {
-      console.error('Error:', error)
-    })
-}
-//
-//
-//
-//
-const publicKeysYo = [
-  'BC1YLfwaYiDWz2kwre6eyRTH2Jstnhtd9RZxFSASxXMohk1xQJ422k9',
-  'BC1YLhHwbyr2Z5HVz52yeKjU11nTFQM2b6FGc4ok6Jyzzp3s14ovwvo',
-  'BC1YLgMPPCLcWbWc9pCay3nH2y92ajv796sQahNz3LopMmUqi3Ta4wc',
-  'BC1YLgBTK3JHAWbZakS5adCrabCik5jL2HBTTrSUkfbPYdaTicFwTcX'
-]
-
-getUsers(publicKeysYo)
-//
-//
-//
 
 observeUrlChange()
 waitAsyncPageLoad()

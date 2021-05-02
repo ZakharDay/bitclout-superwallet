@@ -1,4 +1,5 @@
 import { prepareSidebarForNextDataLoad } from './sidebar_html_modifiers'
+import { updateHtmlProfileCreatorWallet } from './profile_html_modifiers'
 
 import {
   updateHtmlWalletPortfolio,
@@ -7,18 +8,22 @@ import {
 
 import {
   getApiWalletPortfolioItemData,
-  getApiCreatorCoinBuyOrSellData
+  getApiCreatorCoinBuyOrSellData,
+  getApiUsersData
 } from './server_requests'
 
 import {
   getStorePublicKey,
   getStoreWalletPortfolio,
-  setStoreWalletPortfolio
+  setStoreWalletPortfolio,
+  setStoreCreatorWallet,
+  getStoreProfilePublicKey
 } from './store'
 
 import {
   mergeDataWalletPortfolioItem,
-  mergeDataWalletPortfolioItemShare
+  mergeDataWalletPortfolioItemShare,
+  prepareDataCreatorWallet
 } from './data_modifiers'
 
 function updateDataWalletPortfolio() {
@@ -66,4 +71,13 @@ function updateDataWalletPortfolioItem(data) {
   })
 }
 
-export { updateDataWalletPortfolio }
+function updateDataCreatorWallet() {
+  const publicKey = getStoreProfilePublicKey()
+
+  getApiUsersData([publicKey])
+    .then((data) => prepareDataCreatorWallet(data))
+    .then((data) => setStoreCreatorWallet(data.creatorWallet))
+    .then(() => updateHtmlProfileCreatorWallet())
+}
+
+export { updateDataWalletPortfolio, updateDataCreatorWallet }
