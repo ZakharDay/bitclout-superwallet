@@ -146,4 +146,62 @@ function prepareHtmlProfileTabs() {
   profileTabsWrapper.appendChild(walletTab)
 }
 
-export { addHtmlProfileFounderRewardPercentage, prepareHtmlProfileTabs }
+function addHtmlUserWatchButton(item, creatorProfileTopCard) {
+  const wrapper = document.querySelector(
+    // '.js-creator-profile-top-card-container'
+    '.creator-profile__top-bar'
+  )
+
+  wrapper.style.setProperty('justify-content', 'flex-end')
+  wrapper.style.setProperty('align-items', 'center')
+
+  const publicKeyElement = document.querySelector(
+    '.creator-profile__ellipsis-restriction'
+  )
+
+  const publicKey = publicKeyElement.childNodes[
+    publicKeyElement.childNodes.length - 1
+  ].textContent.replace(/ /g, '')
+
+  const button = document.createElement('div')
+  button.classList.add('watchButton')
+
+  chrome.storage.sync.get('userListToWatch', ({ userListToWatch }) => {
+    if (userListToWatch.includes(publicKey)) {
+      button.classList.add('muted')
+    }
+
+    button.addEventListener('click', (e) => {
+      chrome.storage.sync.get('userListToWatch', ({ userListToWatch }) => {
+        if (userListToWatch.includes(publicKey)) {
+          button.classList.remove('muted')
+
+          let newUserListToWatch = []
+
+          userListToWatch.forEach((userPublicKey, i) => {
+            if (userPublicKey === publicKey) {
+              chrome.storage.sync.remove(userPublicKey)
+            } else {
+              newUserListToWatch.push(userPublicKey)
+            }
+          })
+
+          chrome.storage.sync.set({ userListToWatch: newUserListToWatch })
+        } else {
+          button.classList.add('muted')
+
+          const newUserListToWatch = [...userListToWatch, publicKey]
+          chrome.storage.sync.set({ userListToWatch: newUserListToWatch })
+        }
+      })
+    })
+
+    wrapper.appendChild(button)
+  })
+}
+
+export {
+  addHtmlProfileFounderRewardPercentage,
+  prepareHtmlProfileTabs,
+  addHtmlUserWatchButton
+}

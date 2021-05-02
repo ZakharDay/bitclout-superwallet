@@ -101,14 +101,24 @@ function getApiCreatorCoinBuyOrSellData(creatorData) {
 }
 
 function getChromeStorageWatchedCreatorsData() {
-  chrome.storage.sync.get('creatorList', ({ creatorList }) => {
-    if (creatorList.length > 0 && creatorList[0] != '') {
-      modifyHtmlSidebarOnFirstLoad(creatorList)
+  chrome.storage.sync.get('userListToWatch', ({ userListToWatch }) => {
+    if (userListToWatch.length > 0 && userListToWatch[0] != '') {
+      chrome.storage.sync.get((items) => {
+        let users = []
+
+        Object.keys(items).forEach((key, i) => {
+          if (userListToWatch.includes(key)) {
+            users.push(items[key])
+          }
+        })
+
+        modifyHtmlSidebarOnFirstLoad(users)
+      })
     }
   })
 }
 
-function getApiSidebarCreatorCoinData(username, order) {
+function getApiSidebarCreatorCoinData(userListToWatchItem, order) {
   const publicKey = getStorePublicKey()
 
   const data = {
@@ -120,9 +130,11 @@ function getApiSidebarCreatorCoinData(username, order) {
     OrderBy: 'newest_last_post',
     PublicKeyBase58Check: '',
     ReaderPublicKeyBase58Check: publicKey,
-    Username: username,
+    Username: userListToWatchItem.username,
     UsernamePrefix: ''
   }
+
+  console.log('Request', userListToWatchItem, data)
 
   fetch(getProfilesUrl, {
     method: 'POST',
@@ -135,9 +147,9 @@ function getApiSidebarCreatorCoinData(username, order) {
     .then((data) => {
       updateHtmlSidebar(data, order)
 
-      // if (process.env.NODE_ENV === 'development') {
-      // console.log('Success:', data)
-      // }
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Success:', data)
+      }
     })
     .catch((error) => {
       console.error('Error:', error)

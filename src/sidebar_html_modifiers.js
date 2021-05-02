@@ -8,7 +8,7 @@ import {
   calcFounderRewardPercentage
 } from './calcs_and_formatters'
 
-function modifyHtmlSidebarOnFirstLoad(creatorList) {
+function modifyHtmlSidebarOnFirstLoad(userListToWatch) {
   const publicKey = getStorePublicKey()
   const bitCloutPrice = getStoreBitCloutPrice()
   const sidebar = document.querySelector('.global__sidebar__inner')
@@ -38,8 +38,8 @@ function modifyHtmlSidebarOnFirstLoad(creatorList) {
     sidebar.insertBefore(wrapper, walletTrackerWrapper.nextSibling)
   }
 
-  creatorList.forEach((creatorListItem, i) => {
-    getApiSidebarCreatorCoinData(creatorListItem, i)
+  userListToWatch.forEach((userListToWatchItem, i) => {
+    getApiSidebarCreatorCoinData(userListToWatchItem, i)
   })
 }
 

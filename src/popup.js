@@ -14,34 +14,45 @@ Array.prototype.remove = function () {
 
 function checkAndMigrateData() {
   return new Promise((resolve, reject) => {
-    let newUserListToTrack = []
+    let newUserListToWatch = []
+
+    // console.log('yo')
 
     chrome.storage.sync.get('userListToWatch', ({ userListToWatch }) => {
       if (!userListToWatch) {
+        // console.log('no')
+        chrome.storage.sync.set({
+          creatorList: ['zakharday', 'superwallet', 'wallettracker']
+        })
+
         chrome.storage.sync.get('creatorList', ({ creatorList }) => {
+          console.log(creatorList)
           if (creatorList && creatorList[0] != '') {
-            chrome.storage.sync.set({ userListToWatch: creatorList }, () => {
-              fetchCreatorsForPopup(creatorList).then(() => {
-                chrome.storage.sync.remove('creatorList')
-                resolve()
-              })
+            // chrome.storage.sync.set({ userListToWatch: creatorList }, () => {
+            fetchCreatorsForPopup(creatorList).then(() => {
+              chrome.storage.sync.remove('creatorList')
+              resolve()
             })
+            // })
           }
         })
       } else {
-        //   chrome.storage.sync.get('userListToWatch', ({ userListToWatch }) => {
-        //     chrome.storage.sync.remove('userListToWatch')
-        //
-        //     userListToWatch.forEach((publicKey, i) => {
-        //       // let key = user.publicKey
-        //       // console.log('key', key)
-        //       chrome.storage.sync.remove(publicKey)
-        //     })
-        //
-        //     // return userListToWatch
-        //     console.log('from storage', userListToWatch)
-        resolve()
+        // console.log('yes')
+
+        // chrome.storage.sync.get((items) => {
+        //   Object.keys(items).forEach((key, i) => {
+        //     chrome.storage.sync.remove(`${key}`)
         //   })
+        //
+        //   chrome.storage.sync.set(
+        //     {
+        //       creatorList: ['zakharday', 'superwallet', 'wallettracker']
+        //     },
+        //     resolve
+        //   )
+        // })
+
+        resolve()
       }
     })
   })
@@ -51,6 +62,8 @@ function checkAndFetchData() {
   return new Promise(function (resolve, reject) {
     chrome.storage.sync.get((items) => {
       let unknownList = []
+
+      console.log(items)
 
       items['userListToWatch'].forEach((publicKey, i) => {
         if (items[publicKey]) {
@@ -82,51 +95,83 @@ function fetchCreatorsForPopup(creators) {
 function fetchCreatorForPopup(creator) {
   return new Promise((resolve, reject) => {
     getApiProfileData(creator)
-      .then((data) => formatDataUserListToTrack(data))
-      .then((user) => setStorageUserListToTrack(user))
+      .then((data) => formatDataUserListToWatch(data))
+      .then((user) => setStorageUserListToWatch(user))
       .then(resolve)
   })
 }
 
-function getStorageUserListToTrack() {
+function getStorageUserListToWatch() {
   chrome.storage.sync.get('userListToWatch', ({ userListToWatch }) => {
     return userListToWatch
   })
 }
 
-function setStorageUserListToTrack(user) {
+function setStorageUserListToWatch(user) {
   return new Promise(function (resolve, reject) {
-    // console.log('setStorageUserListToTrack', user)
-    chrome.storage.sync.set({ [user.publicKey]: user }, resolve)
+    // console.log('setStorageUserListToWatch', user)
+    if (user) {
+      chrome.storage.sync.set({ [user.publicKey]: user })
+
+      chrome.storage.sync.get('userListToWatch', ({ userListToWatch }) => {
+        if (userListToWatch) {
+          userListToWatch.push(user.publicKey)
+        } else {
+          userListToWatch = [user.publicKey]
+        }
+
+        chrome.storage.sync.set({ userListToWatch }, resolve)
+      })
+    } else {
+      resolve()
+    }
   })
 }
 
-function formatDataUserListToTrack(data) {
+function formatDataUserListToWatch(data) {
   return new Promise((resolve, reject) => {
-    const profileData = data['ProfilesFound'][0]
+    if (data['ProfilesFound'] && data['ProfilesFound'][0]) {
+      const profileData = data['ProfilesFound'][0]
 
-    resolve({
-      publicKey: profileData['PublicKeyBase58Check'],
-      username: profileData['Username'],
-      profilePic: profileData['ProfilePic']
-    })
+      resolve({
+        publicKey: profileData['PublicKeyBase58Check'],
+        username: profileData['Username'],
+        profilePic: profileData['ProfilePic']
+      })
+    } else {
+      resolve()
+    }
   })
 }
 
 function getApiProfileData(publicKey) {
   return new Promise((resolve, reject) => {
+    const superWalletPublicKey =
+      'BC1YLgTwjbHjy8rLPWZHX53JMmreo5u3sxX5BvdASugUyUaMZdo51oh'
+
     const data = {
       AddGlobalFeedBool: false,
       Description: '',
-      FetchUsersThatHODL: true,
+      FetchUsersThatHODL: false,
       ModerationType: '',
       NumToFetch: 1,
       OrderBy: 'newest_last_post',
-      PublicKeyBase58Check: publicKey,
-      ReaderPublicKeyBase58Check: publicKey,
-      Username: '',
       UsernamePrefix: ''
     }
+
+    console.log(publicKey, publicKey.length, publicKey.length < 55)
+
+    if (publicKey.length === 55) {
+      data['ReaderPublicKeyBase58Check'] = publicKey
+      data['PublicKeyBase58Check'] = publicKey
+      data['Username'] = ''
+    } else {
+      data['ReaderPublicKeyBase58Check'] = superWalletPublicKey
+      data['PublicKeyBase58Check'] = ''
+      data['Username'] = publicKey
+    }
+
+    console.log('Request', data)
 
     fetch('https://api.bitclout.com/get-profiles', {
       method: 'POST',
@@ -139,7 +184,7 @@ function getApiProfileData(publicKey) {
       .then((data) => {
         resolve(data)
         if (process.env.NODE_ENV === 'development') {
-          // console.log('Success:', data, publicKey)
+          console.log('Success:', data, publicKey)
         }
       })
       .catch((error) => {
@@ -153,7 +198,7 @@ function getApiProfileData(publicKey) {
   })
 }
 
-function renderHtmlUserListToTrack() {
+function renderHtmlUserListToWatch() {
   let usersData = []
 
   chrome.storage.sync.get('userListToWatch', ({ userListToWatch }) => {
@@ -173,7 +218,7 @@ function renderHtmlUserListToTrack() {
 }
 
 function renderHtmlUser(userData) {
-  const container = document.getElementById('userListTrackerContainer')
+  const container = document.getElementById('userListToWatchContainer')
   const tabItemElement = document.createElement('div')
   const leftWrapperElement = document.createElement('div')
   const userPicElement = document.createElement('div')
@@ -202,7 +247,7 @@ function renderHtmlUser(userData) {
 
 function showHtmlFirstTab() {
   document.getElementById('preloaderContainer').remove()
-  document.getElementById('userListTrackerContainer').classList.add('active')
+  document.getElementById('userListToWatchContainer').classList.add('active')
 }
 
 function userListToWatchRemoveItem(userData) {
@@ -220,5 +265,5 @@ function userListToWatchRemoveItem(userData) {
 
 checkAndMigrateData()
   .then(checkAndFetchData)
-  .then(renderHtmlUserListToTrack)
+  .then(renderHtmlUserListToWatch)
   .then(showHtmlFirstTab)

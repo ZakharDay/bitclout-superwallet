@@ -31,7 +31,8 @@ import {
 
 import {
   addHtmlProfileFounderRewardPercentage,
-  prepareHtmlProfileTabs
+  prepareHtmlProfileTabs,
+  addHtmlUserWatchButton
 } from './profile_html_modifiers'
 
 import {
@@ -147,6 +148,7 @@ function initProfilePage() {
         item = mergeDataWalletPortfolioItem(item, data)
         addHtmlUserExternalLinks(item, creatorProfileTopCard)
         addHtmlProfileFounderRewardPercentage(item)
+        addHtmlUserWatchButton(item, creatorProfileTopCard)
       })
 
       prepareHtmlProfileTabs()

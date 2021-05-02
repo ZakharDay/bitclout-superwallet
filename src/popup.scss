@@ -5,6 +5,7 @@
   --border: #dee2e6;
   --red1: #ff5252;
   --red2: #ff9c9c;
+  --superwallet: #1161fb;
 }
 
 * {
@@ -19,6 +20,59 @@ body {
   font-size: 14px;
   font-weight: 400;
   color: var(--black);
+}
+
+nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  width: 100%;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  background: white;
+
+  .tab {
+    position: relative;
+    min-width: 80px;
+    height: 50px;
+    padding: 0 15px;
+    font-size: 15px;
+    text-align: center;
+    line-height: 46px;
+    color: var(--grey);
+    cursor: pointer;
+
+    &:hover {
+      color: var(--black);
+    }
+
+    &.active {
+      color: var(--black);
+
+      .line {
+        div {
+          background: var(--superwallet);
+        }
+      }
+    }
+
+    .line {
+      position: absolute;
+      width: 100%;
+      height: 2px;
+      left: 0;
+      bottom: 0;
+
+      div {
+        width: 50px;
+        height: 3px;
+        margin: 0 auto;
+      }
+    }
+  }
 }
 
 .tabsWrapper {
@@ -67,6 +121,7 @@ body {
     .userPic {
       width: 30px;
       height: 30px;
+      border-radius: 3px;
       background-size: cover;
       background-position: center;
     }

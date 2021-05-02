@@ -1,6 +1,6 @@
 {
   "name": "bitclout-superwallet",
-  "version": "0.6.0",
+  "version": "0.1.0",
   "description": "Chrome extension that Updates your BitClout wallet",
   "private": true,
   "scripts": {
