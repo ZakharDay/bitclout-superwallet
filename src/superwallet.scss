@@ -1,0 +1,225 @@
+:root {
+  --blue: #005bff;
+  --grey: #777;
+  --black: #222;
+  --border: #dee2e6;
+  --red1: #ff5252;
+  --red2: #ff9c9c;
+  --hover: #e6f0ff;
+}
+
+body {
+  // background: blue;
+}
+
+.userExternalLinks {
+  position: absolute;
+
+  &:hover {
+    z-index: 2;
+
+    .superWalletIcon {
+      // display: none;
+      z-index: 2;
+    }
+
+    .linksList {
+      display: block;
+      z-index: 3;
+    }
+  }
+
+  .superWalletIcon {
+    position: absolute;
+    border: 1px solid white;
+    background-color: white;
+    background-image: url('data:image/png;base64,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');
+    background-position: center;
+    background-size: cover;
+  }
+
+  .linksList {
+    position: absolute;
+    display: none;
+    width: 220px;
+    padding: 6px 0;
+    border-radius: 10px;
+    background-color: white;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.15);
+
+    .linkItem {
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      height: 40px;
+      padding: 0 15px;
+      border-top: 1px solid var(--border);
+      font-size: 15px;
+      font-weight: 400;
+      line-height: 1.5;
+      color: var(--black);
+
+      &:first-child {
+        border: none;
+      }
+
+      &:hover {
+        background-color: var(--hover);
+        cursor: pointer;
+      }
+
+      &::before {
+        display: block;
+        content: '';
+        width: 28px;
+        height: 28px;
+        margin-right: 15px;
+        border-radius: 3px;
+        background-position: center;
+        background-size: cover;
+      }
+
+      &.bitCloutPulse::before {
+        background-image: url('data:image/jpeg;base64,/9j/2wCEAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDIBCQkJDAsMGA0NGDIhHCEyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMv/AABEIAGQAZAMBIgACEQEDEQH/xAGiAAABBQEBAQEBAQAAAAAAAAAAAQIDBAUGBwgJCgsQAAIBAwMCBAMFBQQEAAABfQECAwAEEQUSITFBBhNRYQcicRQygZGhCCNCscEVUtHwJDNicoIJChYXGBkaJSYnKCkqNDU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6g4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2drh4uPk5ebn6Onq8fLz9PX29/j5+gEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoLEQACAQIEBAMEBwUEBAABAncAAQIDEQQFITEGEkFRB2FxEyIygQgUQpGhscEJIzNS8BVictEKFiQ04SXxFxgZGiYnKCkqNTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqCg4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2dri4+Tl5ufo6ery8/T19vf4+fr/2gAMAwEAAhEDEQA/APIaKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKfDDJcTxQRLuklcIg9STgfqa6bxz4IufA+o2lpcXcd0LmHzVkjQqAQcMuD6cc+9AHLUUUUAFFFFABRRRQAUUUUAFFFFABRRRQB1/wv0r+1/iLpERXMcEhuX47RjI/wDHttei/H21S40jRNSiKusdxLAXXn7wz/NDWP8ABGCOwj8R+JZx+6srXywT9C7foq/nUt1PJ4j/AGdWupTunsb0yOT1z5xz/wCOyUAePUVt+FfC2oeL9Z/szTjEsojaV3mJCIowMnAJ6kD8ay76zn07ULmxuk2XFvK0Ui+jKcGgCCiiigAooooAKKKKACiiigArQsNB1jVITNp+lXt3ErbS8EDOoPpkDrWfXWeHPiP4l8LaZ/Z2l3MC2u8yBJYA5BPXBoA7ia2n8H/s+TQXMMlvfatcFXjkUq672xgg8/6tP1qH4YD+1/hn4z0M8kRtKi+7RnH6xiuF8T+Otf8AF8NvDq9xE8UDF0SKIINxGMn14/nXX/Ae8WPxfqFjIfku7Inae5Rh/RjQBqfBdbXQvDOveLtQylupWEP3Crgtj6llH4Vm/FvwVqknjd9R0jS7q8t7+JZWa2hZwsg+U5I6Zwp/GtT4hWw8F/CPS/C6kCe8uWM20/eUMXb9SgrkbL4w+MbCygtIry1eOBFjUy2wZiAMDJzzx3oA6q1+AF1JpCy3OtpDqLJu8lYd0aH+6Wzk/UD868j1HT7nStSudPvI/LubaRopFznDA9j3FfQlr8c/DEmji4uku4r0J89osJbLeit93HuSK8D17V5df8QX+rTII3u5ml2A5Cg9BnvgACgDOooooAKKKKACiiigAooooAK674Yaiml/EfR5pHVI5JGgdmOBh1IGfxxXI0daAPSPjZra6p44WzhkV4dPt1i+VsjzG+Zvx+6PwrzeiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKAP/2Q==');
+      }
+
+      &.signalClout::before {
+        background-image: url('data:image/jpeg;base64,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');
+      }
+    }
+  }
+}
+
+.swWallet {
+  .walletTopBar {
+    justify-content: space-between;
+
+    .forceWalletUpdateButton {
+      width: 160px;
+      height: 36px;
+      margin-right: 15px;
+      font-size: 14px;
+      text-align: center;
+      line-height: 36px;
+      color: white;
+      background-color: var(--blue);
+      border-radius: 5px;
+      cursor: pointer;
+    }
+  }
+
+  .userExternalLinks {
+    top: 24px;
+    left: 36px;
+
+    .superWalletIcon {
+      width: 16px;
+      height: 16px;
+      border-radius: 8px;
+    }
+
+    .linksList {
+      top: -38px;
+      left: 16px;
+    }
+  }
+
+  // sidebar
+  .watchListContainer {
+    display: flex;
+    flex-direction: column;
+    margin: 0 0 20px;
+    font-size: 12px;
+
+    .creatorListItem {
+      position: relative;
+
+      .userExternalLinks {
+        top: -9px;
+        left: 20px;
+      }
+    }
+  }
+}
+
+// browse page
+
+.swBrowse {
+  .mentionDropdown {
+    position: absolute;
+    top: -10000px;
+    left: -10000px;
+    z-index: 999999999999999;
+    display: none;
+    width: 260px;
+    padding: 10px 0;
+    border-radius: 10px;
+    background-color: white;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.15);
+
+    &.active {
+      display: block;
+    }
+  }
+
+  .mentionDropdownItem {
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    width: 260px;
+    height: 60px;
+    padding: 0 20px;
+    border-top: 1px solid var(--border);
+
+    &:first-child {
+      border: none;
+    }
+
+    &:hover {
+      background-color: var(--hover);
+      cursor: pointer;
+    }
+
+    .userPic {
+      width: 28px;
+      height: 28px;
+      margin-right: 15px;
+      border-radius: 3px;
+      background-position: center;
+      background-size: cover;
+    }
+
+    .userName {
+      font-size: 15px;
+      font-weight: 400;
+      line-height: 1.5;
+      color: var(--black);
+    }
+
+    .userCoin {
+      font-size: 12px;
+      font-weight: 400;
+      line-height: 1.5;
+      color: var(--grey);
+    }
+  }
+}
+
+.swProfile {
+  .userExternalLinks {
+    top: 96px;
+    left: 110px;
+
+    .superWalletIcon {
+      width: 24px;
+      height: 24px;
+      margin-right: 10px;
+      border-radius: 12px;
+    }
+
+    .linksList {
+      top: -33px;
+      left: 24px;
+    }
+  }
+}

@@ -1,6 +1,7 @@
 import { getApiSidebarCreatorCoinData } from './server_requests'
 import { getStorePublicKey, getStoreBitCloutPrice } from './store'
 import { mergeDataWalletPortfolioItem } from './data_modifiers'
+import { addHtmlUserExternalLinks } from './html_modifiers'
 
 import {
   calcAndFormatRealCoinPrice,
@@ -20,11 +21,6 @@ function modifyHtmlSidebarOnFirstLoad(creatorList) {
   header.classList.add('watchListHeader')
   const container = document.createElement('section')
   container.classList.add('watchListContainer')
-  container.style.fontSize = '12px'
-  container.style.marginBottom = '20px'
-  container.style.display = 'flex'
-  container.style.margin = '0 0 20px'
-  container.style.setProperty('flex-direction', 'column')
   const heading = document.createElement('div')
   heading.classList.add('fs-15px', 'text-grey5', 'font-weight-bold', 'mb-15px')
   heading.innerText = 'Your Watch List'
@@ -57,6 +53,7 @@ function updateHtmlSidebar(data, order) {
   const creatorCoinPrice = calcAndFormatRealCoinPrice(sidebarItem)
 
   creatorListItemElement.href = `https://bitclout.com/u/${username}`
+  // creatorListItemElement.id = username
   creatorListItemElement.style.order = `${order}`
   creatorListItemElement.childNodes[0].style.backgroundImage = `url("${creator['ProfilePic']}")`
 
@@ -70,6 +67,7 @@ function updateHtmlSidebar(data, order) {
     ''
   )
 
+  addHtmlUserExternalLinks(data, creatorListItemElement)
   container.appendChild(creatorListItemElement)
 }
 

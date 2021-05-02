@@ -1,4 +1,5 @@
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+const CssMinimizerPlugin = require('css-minimizer-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const webpack = require('webpack')
 const path = require('path')
@@ -15,18 +16,23 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.scss$/,
+        test: /\.scss$/i,
         use: [MiniCssExtractPlugin.loader, 'css-loader', 'sass-loader']
       },
       {
         test: /\.html$/i,
         loader: 'html-loader'
+      },
+      {
+        resourceQuery: /raw/,
+        type: 'asset/source'
       }
     ]
   },
   plugins: [
     new MiniCssExtractPlugin({
-      filename: 'popup.css'
+      filename: '[name].css',
+      chunkFilename: '[id].css'
     }),
     new HtmlWebpackPlugin({
       hash: true,
@@ -35,5 +41,8 @@ module.exports = {
       filename: './popup.html',
       chunks: ['popup']
     })
-  ]
+  ],
+  optimization: {
+    minimizer: [new CssMinimizerPlugin()]
+  }
 }

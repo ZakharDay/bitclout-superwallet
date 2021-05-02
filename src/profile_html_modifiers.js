@@ -1,27 +1,5 @@
 import { calcFounderRewardPercentage } from './calcs_and_formatters'
 
-function addHtmlProfileBitCloutPulseLink(data, element) {
-  let bitCloutPulseLink = document.createElement('a')
-  bitCloutPulseLink.href = `https://www.bitcloutpulse.com/profiles/${data.publicKey}`
-  bitCloutPulseLink.classList.add('bitCloutPulseLink')
-
-  bitCloutPulseLink.style.backgroundColor = '#005bff'
-  bitCloutPulseLink.style.borderRadius = '12px'
-  bitCloutPulseLink.style.position = 'absolute'
-  bitCloutPulseLink.style.top = '96px'
-  bitCloutPulseLink.style.left = '110px'
-  bitCloutPulseLink.style.width = '24px'
-  bitCloutPulseLink.style.height = '24px'
-  bitCloutPulseLink.style.lineHeight = '24px'
-  bitCloutPulseLink.style.fontSize = '16px'
-  bitCloutPulseLink.style.textAlign = 'center'
-  bitCloutPulseLink.style.color = 'white'
-  bitCloutPulseLink.target = '_blank'
-  bitCloutPulseLink.innerText = 'P'
-
-  element.appendChild(bitCloutPulseLink)
-}
-
 function addHtmlProfileFounderRewardPercentage(data) {
   let wrapper = document.createElement('div')
   wrapper.style.whitespace = 'nowrap'
@@ -168,8 +146,4 @@ function prepareHtmlProfileTabs() {
   profileTabsWrapper.appendChild(walletTab)
 }
 
-export {
-  addHtmlProfileBitCloutPulseLink,
-  addHtmlProfileFounderRewardPercentage,
-  prepareHtmlProfileTabs
-}
+export { addHtmlProfileFounderRewardPercentage, prepareHtmlProfileTabs }

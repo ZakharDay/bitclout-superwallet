@@ -2,7 +2,7 @@ import { prepareSidebarForNextDataLoad } from './sidebar_html_modifiers'
 
 import {
   updateHtmlWalletPortfolio,
-  addHtmlWalletPortfolioItemBitCloutPulseLink
+  addHtmlWalletPortfolioItemUserExternalLinks
 } from './wallet_html_modifiers'
 
 import {
@@ -31,7 +31,7 @@ function updateDataWalletPortfolio() {
       getApiWalletPortfolioItemData(item).then((data) => {
         let newItem = mergeDataWalletPortfolioItem(item, data)
         updateDataWalletPortfolioItem(newItem)
-        addHtmlWalletPortfolioItemBitCloutPulseLink(newItem)
+        addHtmlWalletPortfolioItemUserExternalLinks(newItem)
 
         data['ProfilesFound'][0]['UsersThatHODL'].forEach((userThatHODL, i) => {
           if (publicKey === userThatHODL['HODLerPublicKeyBase58Check']) {

@@ -1,8 +1,13 @@
 import getCaretCoordinates from 'textarea-caret'
-
 import { updateDataWalletPortfolio } from './actions'
-import { getHtmlBitCloutPrice } from './html_modifiers'
 import { mergeDataWalletPortfolioItem } from './data_modifiers'
+
+import {
+  injectHtmlCss,
+  markHtmlBody,
+  getHtmlBitCloutPrice,
+  addHtmlUserExternalLinks
+} from './html_modifiers'
 
 import {
   addHtmlDropdown,
@@ -25,7 +30,6 @@ import {
 } from './store'
 
 import {
-  addHtmlProfileBitCloutPulseLink,
   addHtmlProfileFounderRewardPercentage,
   prepareHtmlProfileTabs
 } from './profile_html_modifiers'
@@ -35,8 +39,7 @@ import {
   getHtmlWalletPortfolio,
   addHtmlWalletUpdateButton,
   modifyHtmlWalletGridOnFirstLoad,
-  prepareHtmlWalletForNextDataLoad,
-  addHtmlWalletPortfolioBitCloutPulseLinks
+  prepareHtmlWalletForNextDataLoad
 } from './wallet_html_modifiers'
 
 function observeUrlChange() {
@@ -73,6 +76,9 @@ function waitAsyncPageLoad() {
     )
 
     if (detectionElement != null && detectionElement.length > 0) {
+      injectHtmlCss()
+      markHtmlBody(urlPartFirstLetter)
+
       if (urlPartFirstLetter === 'w') {
         initWalletPage()
         initSidebar()
@@ -139,7 +145,7 @@ function initProfilePage() {
       item.username = pathname.substr(3)
       getApiWalletPortfolioItemData(item).then((data) => {
         item = mergeDataWalletPortfolioItem(item, data)
-        addHtmlProfileBitCloutPulseLink(item, creatorProfileTopCard)
+        addHtmlUserExternalLinks(item, creatorProfileTopCard)
         addHtmlProfileFounderRewardPercentage(item)
       })
 

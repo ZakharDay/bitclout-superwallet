@@ -1,3 +1,7 @@
+import { isAN } from './utilities'
+import { getStoreWalletPortfolio } from './store'
+import { updateDataWalletPortfolio } from './actions'
+
 import {
   floatNumberPattern,
   calcFounderRewardPercentage,
@@ -6,10 +10,10 @@ import {
   calcAndFormatPortfolioItemPriceInBitClout
 } from './calcs_and_formatters'
 
-import { isAN } from './utilities'
-import { getStoreWalletPortfolio } from './store'
-import { clearElementsWithDash } from './html_modifiers'
-import { updateDataWalletPortfolio } from './actions'
+import {
+  clearElementsWithDash,
+  addHtmlUserExternalLinks
+} from './html_modifiers'
 
 function getHtmlWalletPublicKey() {
   const publicKey = document
@@ -73,29 +77,18 @@ function getHtmlWalletPortfolio() {
 }
 
 function addHtmlWalletUpdateButton() {
-  let topBar = document.getElementsByClassName('global__top-bar')[0]
-  let forceWalletUpdateButton = document.createElement('div')
+  const walletTopBar = document.getElementsByClassName('global__top-bar')[0]
+  const forceWalletUpdateButton = document.createElement('div')
 
-  topBar.style.setProperty('justify-content', 'space-between')
-
+  walletTopBar.classList.add('walletTopBar')
   forceWalletUpdateButton.classList.add('forceWalletUpdateButton')
   forceWalletUpdateButton.innerHTML = 'Update wallet'
-  forceWalletUpdateButton.style.width = '160px'
-  forceWalletUpdateButton.style.height = '36px'
-  forceWalletUpdateButton.style.marginRight = '15px'
-  forceWalletUpdateButton.style.backgroundColor = '#005bff'
-  forceWalletUpdateButton.style.borderRadius = '5px'
-  forceWalletUpdateButton.style.textAlign = 'center'
-  forceWalletUpdateButton.style.lineHeight = '36px'
-  forceWalletUpdateButton.style.color = 'white'
-  forceWalletUpdateButton.style.cursor = 'pointer'
-  forceWalletUpdateButton.style.fontSize = '14px'
 
   forceWalletUpdateButton.addEventListener('click', () => {
     prepareHtmlWalletForNextDataLoad().then(() => updateDataWalletPortfolio())
   })
 
-  topBar.appendChild(forceWalletUpdateButton)
+  walletTopBar.appendChild(forceWalletUpdateButton)
 }
 
 function modifyHtmlWalletGridOnFirstLoad() {
@@ -328,37 +321,14 @@ function updateHtmlWalletPortfolioItemNameCell(item) {
   }
 }
 
-function addHtmlWalletPortfolioItemBitCloutPulseLink(item) {
-  let bitCloutPulseLink = document.querySelector(
+function addHtmlWalletPortfolioItemUserExternalLinks(item) {
+  const bitCloutPulseLink = document.querySelector(
     `#${item.username} .bitCloutPulseLink`
   )
 
   if (bitCloutPulseLink === null) {
-    let portfolioRow = document.getElementById(`${item.username}`)
-
-    bitCloutPulseLink = document.createElement('a')
-    bitCloutPulseLink.href = `https://www.bitcloutpulse.com/profiles/${item.publicKey}`
-    bitCloutPulseLink.classList.add('bitCloutPulseLink')
-
-    bitCloutPulseLink.style.backgroundColor = '#005bff'
-    bitCloutPulseLink.style.borderRadius = '10px'
-    bitCloutPulseLink.style.borderWidth = '1px'
-    bitCloutPulseLink.style.borderColor = 'white'
-    bitCloutPulseLink.style.borderStyle = 'solid'
-    bitCloutPulseLink.style.position = 'absolute'
-    bitCloutPulseLink.style.top = '24px'
-    bitCloutPulseLink.style.left = '36px'
-    bitCloutPulseLink.style.width = '16px'
-    bitCloutPulseLink.style.height = '16px'
-    bitCloutPulseLink.style.lineHeight = '16px'
-    bitCloutPulseLink.style.marginRight = '10px'
-    bitCloutPulseLink.style.fontSize = '10px'
-    bitCloutPulseLink.style.textAlign = 'center'
-    bitCloutPulseLink.style.color = 'white'
-    bitCloutPulseLink.target = '_blank'
-    bitCloutPulseLink.innerText = 'P'
-
-    portfolioRow.appendChild(bitCloutPulseLink)
+    const element = document.getElementById(`${item.username}`)
+    addHtmlUserExternalLinks(item, element)
   }
 }
 
@@ -401,7 +371,6 @@ function updateHtmlWalletPortfolioItemShareInUsdCell(item) {
     element.innerText = '–'
   } else {
     element.innerText = calcAndFormatPortfolioItemPriceInUsd(shareInNanos)
-    // console.log(calcAndFormatPortfolioItemPriceInUsd(shareInNanos))
   }
 }
 
@@ -428,8 +397,6 @@ function updateHtmlWalletPortfolioTotalPriceInUsdCell() {
       if (isAN(item.expectedBitCloutReturnedNanos)) {
         expectedTotalBitCloutReturnedNanos += item.expectedBitCloutReturnedNanos
       }
-
-      // console.log(item.expectedBitCloutReturnedNanos)
     })
 
     const total = calcAndFormatRealCoinPrice({
@@ -505,5 +472,5 @@ export {
   updateHtmlWalletPortfolioItemShareInBitCloutCell,
   updateHtmlWalletPortfolioItemNameCell,
   updateHtmlWalletPortfolio,
-  addHtmlWalletPortfolioItemBitCloutPulseLink
+  addHtmlWalletPortfolioItemUserExternalLinks
 }
