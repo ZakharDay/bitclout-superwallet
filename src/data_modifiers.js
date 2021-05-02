@@ -50,11 +50,14 @@ function prepareDataCreatorWallet(data) {
       founderReward: profileEntry['CoinEntry']['CreatorBasisPoints']
     }
 
+    // console.log('Profile', profile)
+
     user['UsersYouHODL'].forEach((userYouHODL, i) => {
       if (userYouHODL['BalanceNanos'] > 1) {
         const creatorWalletItem = {
           username: userYouHODL['ProfileEntryResponse']['Username'],
           profilePic: userYouHODL['ProfileEntryResponse']['ProfilePic'],
+          publicKey: userYouHODL['CreatorPublicKeyBase58Check'],
           balanceNanos: userYouHODL['BalanceNanos'],
           coinPriceNanos:
             userYouHODL['ProfileEntryResponse']['CoinPriceBitCloutNanos']

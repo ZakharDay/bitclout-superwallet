@@ -1,4 +1,5 @@
 import { updateDataCreatorWallet } from './actions'
+import { buyOrSellUrl } from './urls'
 
 import {
   calcFounderRewardPercentage,
@@ -294,16 +295,73 @@ function addHtmlProfileCreatorWalletItem(container, item) {
 
   coinPrice.innerText = ['$', coinPriceText].join('')
 
-  marketValue.innerText = calcAndFormatPortfolioItemPriceInUsd(
-    item.balanceNanos
-  )
+  // marketValue.innerText = calcAndFormatPortfolioItemPriceInUsd(
+  // item.balanceNanos
+  // )
+
+  // marketValue.innerText = (item.balanceNanos / 1000000000) * bitCloutPrice
 
   userCell.appendChild(userPic)
   userCell.appendChild(userName)
   walletItem.appendChild(userCell)
   walletItem.appendChild(coinPrice)
-  walletItem.appendChild(marketValue)
+  // walletItem.appendChild(marketValue)
   container.appendChild(walletItem)
+
+  getApiCreatorCoinBuyOrSellDataTest(item).then((data) => {
+    marketValue.innerText = calcAndFormatPortfolioItemPriceInUsd(
+      data['ExpectedBitCloutReturnedNanos']
+    )
+    walletItem.appendChild(marketValue)
+  })
+}
+
+function getApiCreatorCoinBuyOrSellDataTest(creatorData) {
+  const publicKey = getStoreProfilePublicKey()
+
+  // console.log('Creator data', creatorData)
+
+  return new Promise(function (resolve, reject) {
+    const data = {
+      BitCloutToAddNanos: 0,
+      BitCloutToSellNanos: 0,
+      Broadcast: false,
+      CreatorCoinToSellNanos: creatorData.balanceNanos,
+      CreatorPublicKeyBase58Check: creatorData.publicKey,
+      MinBitCloutExpectedNanos: 0,
+      MinCreatorCoinExpectedNanos: 0,
+      MinFeeRateNanosPerKB: 1000,
+      OperationType: 'sell',
+      SeedInfo: null,
+      Sign: false,
+      UpdaterPublicKeyBase58Check: publicKey,
+      Validate: false
+    }
+
+    // console.log('Request:', data)
+
+    fetch(buyOrSellUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      credentials: 'include',
+      body: JSON.stringify(data)
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        resolve(data)
+
+        if (process.env.NODE_ENV === 'development') {
+          console.log('DEV Success:', data)
+        }
+      })
+      .catch((error) => {
+        if (process.env.NODE_ENV === 'development') {
+          console.error('DEV Error:', error)
+        }
+      })
+  })
 }
 
 export {
