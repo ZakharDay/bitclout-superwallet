@@ -125,6 +125,18 @@ function prepareHtmlProfileTabs() {
     'tab-selector > div.d-flex > div.d-flex:nth-child(2) > div:last-child'
   )
 
+  const diamondsTab = document.querySelector(
+    'tab-selector > div.d-flex > div.d-flex:nth-child(3)'
+  )
+
+  const diamondsTabText = document.querySelector(
+    'tab-selector > div.d-flex > div.d-flex:nth-child(3) > div.d-flex:first-child'
+  )
+
+  const diamondsTabLine = document.querySelector(
+    'tab-selector > div.d-flex > div.d-flex:nth-child(3) > div:last-child'
+  )
+
   const walletTab = document.createElement('div')
   const walletTabText = document.createElement('div')
   const walletTabLine = document.createElement('div')
@@ -151,6 +163,20 @@ function prepareHtmlProfileTabs() {
   })
 
   coinTab.addEventListener('click', () => {
+    const walletTabContainer = document.querySelector('.walletTabContainer')
+
+    if (walletTabContainer) {
+      walletTabContainer.remove()
+    }
+
+    walletTab.classList.remove('active')
+    walletTabText.classList.remove('fc-default')
+    walletTabText.classList.add('fc-muted')
+    walletTabLine.classList.remove('tab-underline-active')
+    walletTabLine.classList.add('tab-underline-inactive')
+  })
+
+  diamondsTab.addEventListener('click', () => {
     const walletTabContainer = document.querySelector('.walletTabContainer')
 
     if (walletTabContainer) {
@@ -192,6 +218,11 @@ function prepareHtmlProfileTabs() {
     coinTabText.classList.add('fc-muted')
     coinTabLine.classList.remove('tab-underline-active')
     coinTabLine.classList.add('tab-underline-inactive')
+
+    diamondsTabText.classList.remove('fc-default')
+    diamondsTabText.classList.add('fc-muted')
+    diamondsTabLine.classList.remove('tab-underline-active')
+    diamondsTabLine.classList.add('tab-underline-inactive')
 
     if (postsTabContainer) {
       postsTabContainer.remove()
