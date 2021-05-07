@@ -337,6 +337,12 @@ function addHtmlWalletPortfolioItemUserExternalLinks(item) {
 function clearHtmlWalletPortfolioItemCoinPriceCells() {
   let elements = document.getElementsByClassName('coinPriceCell')
   clearElementsWithDash(elements)
+
+  // TODO: refactor
+
+  for (let element of elements) {
+    element.classList.remove('up', 'down', 'same')
+  }
 }
 
 function clearHtmlWalletPortfolioItemShareInUsdCells() {
@@ -357,6 +363,17 @@ function clearHtmlWalletPortfolioTotalCells() {
 function updateHtmlWalletPortfolioItemCoinPriceCell(item) {
   const realCoinPrice = calcAndFormatRealCoinPrice(item)
   let element = document.querySelector(`#user_${item.username} .coinPriceCell`)
+
+  // console.log('used', item)
+  element.classList.remove('up', 'down', 'same')
+
+  if (item.oldCoinPriceBitCloutNanos > item.coinPriceBitCloutNanos) {
+    element.classList.add('down')
+  } else if (item.oldCoinPriceBitCloutNanos < item.coinPriceBitCloutNanos) {
+    element.classList.add('up')
+  } else {
+    element.classList.add('same')
+  }
 
   if (isAN(parseInt(realCoinPrice))) {
     element.innerText = ['$', realCoinPrice].join('')

@@ -11,6 +11,7 @@ function mergeDataWalletPortfolioItem(item, data) {
   newItem.stakeMultipleBasisPoints = creator['StakeMultipleBasisPoints']
   newItem.publicKey = creator['PublicKeyBase58Check']
   newItem.isVerified = creator['IsVerified']
+  newItem.oldCoinPriceBitCloutNanos = item.coinPriceBitCloutNanos
   newItem.coinPriceBitCloutNanos = creator['CoinPriceBitCloutNanos']
 
   creator['UsersThatHODL'].forEach((userThatHODL, i) => {
