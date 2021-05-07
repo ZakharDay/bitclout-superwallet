@@ -53,6 +53,11 @@ import {
   prepareHtmlWalletForNextDataLoad
 } from './wallet_html_modifiers'
 
+import {
+  modifyHtmlSidebarOnFirstLoad,
+  renderHtmlSidebarUsers
+} from './sidebar_html_modifiers'
+
 function observeUrlChange() {
   let lastUrl = location.href
 
@@ -194,7 +199,10 @@ function initSidebar() {
       initSidebar()
     }, 1000)
   } else {
+    modifyHtmlSidebarOnFirstLoad()
     getChromeStorageWatchedCreatorsData()
+      .then((userListToWatch) => getApiUsersData(userListToWatch))
+      .then((data) => renderHtmlSidebarUsers(data))
   }
 }
 

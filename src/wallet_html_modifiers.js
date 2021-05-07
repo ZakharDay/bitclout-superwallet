@@ -171,7 +171,7 @@ function modifyHtmlWalletGridOnFirstLoad() {
 
           row.childNodes.forEach((cell, i) => {
             if (i === 0) {
-              cell.classList.remove('col')
+              cell.classList.remove('col-lg-5')
               cell.classList.add('col-6')
 
               cell.childNodes.forEach((aPart, i) => {
@@ -180,7 +180,7 @@ function modifyHtmlWalletGridOnFirstLoad() {
                 }
 
                 if (aPart.classList.contains('holdings__name')) {
-                  row.id = aPart.childNodes[0].innerHTML
+                  row.id = ['user_', aPart.childNodes[0].innerHTML].join('')
                   row.classList.add('portfolioRow')
 
                   aPart.style.height = '44px'
@@ -309,7 +309,9 @@ function moveHtmlWalletPortfolioOldCoinPrice() {
 }
 
 function updateHtmlWalletPortfolioItemNameCell(item) {
-  let element = document.querySelector(`#${item.username} .creatorNameCell`)
+  let element = document.querySelector(
+    `#user_${item.username} .creatorNameCell`
+  )
 
   if (
     item.coinEntry != undefined &&
@@ -323,11 +325,11 @@ function updateHtmlWalletPortfolioItemNameCell(item) {
 
 function addHtmlWalletPortfolioItemUserExternalLinks(item) {
   const bitCloutPulseLink = document.querySelector(
-    `#${item.username} .bitCloutPulseLink`
+    `#user_${item.username} .bitCloutPulseLink`
   )
 
   if (bitCloutPulseLink === null) {
-    const element = document.getElementById(`${item.username}`)
+    const element = document.getElementById(`user_${item.username}`)
     addHtmlUserExternalLinks(element, item)
   }
 }
@@ -354,7 +356,7 @@ function clearHtmlWalletPortfolioTotalCells() {
 
 function updateHtmlWalletPortfolioItemCoinPriceCell(item) {
   const realCoinPrice = calcAndFormatRealCoinPrice(item)
-  let element = document.querySelector(`#${item.username} .coinPriceCell`)
+  let element = document.querySelector(`#user_${item.username} .coinPriceCell`)
 
   if (isAN(parseInt(realCoinPrice))) {
     element.innerText = ['$', realCoinPrice].join('')
@@ -365,7 +367,9 @@ function updateHtmlWalletPortfolioItemCoinPriceCell(item) {
 
 function updateHtmlWalletPortfolioItemShareInUsdCell(item) {
   const shareInNanos = item.expectedBitCloutReturnedNanos
-  let element = document.querySelector(`#${item.username} .assetsInUsdCell`)
+  let element = document.querySelector(
+    `#user_${item.username} .assetsInUsdCell`
+  )
 
   if (isNaN(shareInNanos) || shareInNanos == undefined) {
     element.innerText = '–'
@@ -378,7 +382,7 @@ function updateHtmlWalletPortfolioItemShareInBitCloutCell(item) {
   const share = item.expectedBitCloutReturnedNanos
 
   let element = document.querySelector(
-    `#${item.username} .assetsInBitCloutCell`
+    `#user_${item.username} .assetsInBitCloutCell`
   )
 
   if (isNaN(share) || share == undefined) {
@@ -437,7 +441,7 @@ function updateHtmlWalletPortfolioTotalPriceInBitCloutCell() {
 }
 
 function removeHtmlWalletPortfolioItem(item) {
-  let element = document.getElementById(item.username)
+  let element = document.getElementById(`user_${item.username}`)
   element.style.display = 'none'
 }
 

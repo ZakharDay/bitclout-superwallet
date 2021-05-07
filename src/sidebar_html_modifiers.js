@@ -1,4 +1,3 @@
-import { getApiSidebarCreatorCoinData } from './server_requests'
 import { getStorePublicKey, getStoreBitCloutPrice } from './store'
 import { mergeDataWalletPortfolioItem } from './data_modifiers'
 import { addHtmlUserExternalLinks } from './html_modifiers'
@@ -8,7 +7,7 @@ import {
   calcFounderRewardPercentage
 } from './calcs_and_formatters'
 
-function modifyHtmlSidebarOnFirstLoad(userListToWatch) {
+function modifyHtmlSidebarOnFirstLoad() {
   const publicKey = getStorePublicKey()
   const bitCloutPrice = getStoreBitCloutPrice()
   const sidebar = document.querySelector('.global__sidebar__inner')
@@ -37,29 +36,51 @@ function modifyHtmlSidebarOnFirstLoad(userListToWatch) {
     // console.log('second', walletTrackerWrapper)
     sidebar.insertBefore(wrapper, walletTrackerWrapper.nextSibling)
   }
+}
 
-  userListToWatch.forEach((userListToWatchItem, i) => {
-    getApiSidebarCreatorCoinData(userListToWatchItem, i)
+function renderHtmlSidebarUsers(users) {
+  users['UserList'].forEach((user, i) => {
+    addHtmlSidebarUserItem(user)
   })
 }
 
-function updateHtmlSidebar(data, order) {
-  const creator = data['ProfilesFound'][0]
-  const username = creator['Username']
-  const coinEntry = creator['CoinEntry']
+function addHtmlSidebarUserItem(user) {
+  const username = user['ProfileEntryResponse']['Username']
+  const publicKey = user['ProfileEntryResponse']['PublicKeyBase58Check']
+  const coinEntry = user['ProfileEntryResponse']['CoinEntry']
+  const basisPoints = coinEntry['CreatorBasisPoints']
+  const coinPriceBitCloutNanos =
+    user['ProfileEntryResponse']['CoinPriceBitCloutNanos']
   const container = document.querySelector('.watchListContainer')
   const creatorListItemElement = getHtmlCreatorListItemElement()
-  const sidebarItem = mergeDataWalletPortfolioItem({}, data)
-  const creatorCoinPrice = calcAndFormatRealCoinPrice(sidebarItem)
+
+  // TODO: refactor
+  //
+  const bitCloutPrice = getStoreBitCloutPrice()
+  let coinPriceInUsd = (coinPriceBitCloutNanos * bitCloutPrice) / 1000000000
+
+  coinPriceInUsd = coinPriceInUsd.toLocaleString(undefined, {
+    maximumFractionDigits: 2,
+    minimumFractionDigits: 2
+  })
+
+  const creatorCoinPrice = coinPriceInUsd
+  //
+  // END
+
+  // TODO: refactor
+  //
+  const founderReward = basisPoints / 100 + '%'
+  //
+  // END
 
   creatorListItemElement.href = `https://bitclout.com/u/${username}`
   // creatorListItemElement.id = username
-  creatorListItemElement.style.order = `${order}`
-  creatorListItemElement.childNodes[0].style.backgroundImage = `url("${creator['ProfilePic']}")`
+  creatorListItemElement.childNodes[0].style.backgroundImage = `url("${user['ProfileEntryResponse']['ProfilePic']}")`
 
   creatorListItemElement.childNodes[1].childNodes[0].innerHTML = [
     username,
-    calcFounderRewardPercentage(sidebarItem)
+    founderReward
   ].join(' ')
 
   creatorListItemElement.childNodes[1].childNodes[1].innerHTML = ''
@@ -67,7 +88,11 @@ function updateHtmlSidebar(data, order) {
     ''
   )
 
-  addHtmlUserExternalLinks(creatorListItemElement, data)
+  addHtmlUserExternalLinks(creatorListItemElement, {
+    publicKey: publicKey,
+    username: username
+  })
+
   container.appendChild(creatorListItemElement)
 }
 
@@ -82,4 +107,4 @@ function getHtmlCreatorListItemElement() {
   return sidebarCreatorListItemElement
 }
 
-export { modifyHtmlSidebarOnFirstLoad, updateHtmlSidebar }
+export { modifyHtmlSidebarOnFirstLoad, renderHtmlSidebarUsers }

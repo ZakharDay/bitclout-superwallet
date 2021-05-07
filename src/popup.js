@@ -16,17 +16,9 @@ function checkAndMigrateData() {
   return new Promise((resolve, reject) => {
     let newUserListToWatch = []
 
-    // console.log('yo')
-
     chrome.storage.sync.get('userListToWatch', ({ userListToWatch }) => {
       if (!userListToWatch) {
-        // console.log('no')
-        chrome.storage.sync.set({
-          creatorList: ['zakharday', 'superwallet', 'wallettracker']
-        })
-
         chrome.storage.sync.get('creatorList', ({ creatorList }) => {
-          // console.log(creatorList)
           if (creatorList && creatorList[0] != '') {
             // chrome.storage.sync.set({ userListToWatch: creatorList }, () => {
             fetchCreatorsForPopup(creatorList).then(() => {
@@ -39,20 +31,21 @@ function checkAndMigrateData() {
       } else {
         // console.log('yes')
 
-        // chrome.storage.sync.get((items) => {
-        //   Object.keys(items).forEach((key, i) => {
-        //     chrome.storage.sync.remove(`${key}`)
-        //   })
-        //
-        //   chrome.storage.sync.set(
-        //     {
-        //       creatorList: ['zakharday', 'superwallet', 'wallettracker']
-        //     },
-        //     resolve
-        //   )
-        // })
+        chrome.storage.sync.get((items) => {
+          // console.log(items)
 
-        resolve()
+          Object.keys(items).forEach((key, i) => {
+            if (key === 'userListToWatch') {
+              chrome.storage.sync.set({
+                userListToWatch: [...new Set(items[key])]
+              })
+            } else {
+              chrome.storage.sync.remove(`${key}`)
+            }
+          })
+
+          resolve()
+        })
       }
     })
   })
@@ -60,44 +53,38 @@ function checkAndMigrateData() {
 
 function checkAndFetchData() {
   return new Promise(function (resolve, reject) {
-    chrome.storage.sync.get((items) => {
-      let unknownList = []
-
-      // console.log(items)
-
-      items['userListToWatch'].forEach((publicKey, i) => {
-        if (items[publicKey]) {
-          // console.log('ok ok')
-        } else {
-          unknownList.push(publicKey)
-        }
-      })
-
-      if (unknownList.length > 0) {
-        fetchCreatorsForPopup(unknownList).then(() => {
-          resolve()
-        })
-      } else {
-        resolve()
-      }
+    chrome.storage.sync.get('userListToWatch', ({ userListToWatch }) => {
+      getApiUsersData(userListToWatch).then((data) => resolve(data))
     })
   })
 }
 
-function fetchCreatorsForPopup(creators) {
-  const promises = creators.map((creator, i) => {
-    return fetchCreatorForPopup(creator)
-  })
+function getApiUsersData(publicKeys) {
+  return new Promise(function (resolve, reject) {
+    const data = {
+      PublicKeysBase58Check: publicKeys
+    }
 
-  return Promise.all(promises)
-}
+    fetch('https://api.bitclout.com/get-users-stateless', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('DEV Success getUsers:', data)
+        }
 
-function fetchCreatorForPopup(creator) {
-  return new Promise((resolve, reject) => {
-    getApiProfileData(creator)
-      .then((data) => formatDataUserListToWatch(data))
-      .then((user) => setStorageUserListToWatch(user))
-      .then(resolve)
+        resolve(data)
+      })
+      .catch((error) => {
+        if (process.env.NODE_ENV === 'development') {
+          console.error('DEV Error:', error)
+        }
+      })
   })
 }
 
@@ -107,117 +94,23 @@ function getStorageUserListToWatch() {
   })
 }
 
-function setStorageUserListToWatch(user) {
-  return new Promise(function (resolve, reject) {
-    // console.log('setStorageUserListToWatch', user)
-    if (user) {
-      chrome.storage.sync.set({ [user.publicKey]: user })
-
-      chrome.storage.sync.get('userListToWatch', ({ userListToWatch }) => {
-        if (userListToWatch) {
-          userListToWatch.push(user.publicKey)
-        } else {
-          userListToWatch = [user.publicKey]
-        }
-
-        chrome.storage.sync.set({ userListToWatch }, resolve)
-      })
-    } else {
-      resolve()
-    }
-  })
-}
-
 function formatDataUserListToWatch(data) {
   return new Promise((resolve, reject) => {
-    if (data['ProfilesFound'] && data['ProfilesFound'][0]) {
-      const profileData = data['ProfilesFound'][0]
-
-      resolve({
-        publicKey: profileData['PublicKeyBase58Check'],
-        username: profileData['Username'],
-        profilePic: profileData['ProfilePic']
-      })
+    if (data['UserList']) {
+      resolve(data['UserList'])
     } else {
       resolve()
     }
   })
 }
 
-function getApiProfileData(publicKey) {
-  return new Promise((resolve, reject) => {
-    const superWalletPublicKey =
-      'BC1YLgTwjbHjy8rLPWZHX53JMmreo5u3sxX5BvdASugUyUaMZdo51oh'
-
-    const data = {
-      AddGlobalFeedBool: false,
-      Description: '',
-      FetchUsersThatHODL: false,
-      ModerationType: '',
-      NumToFetch: 1,
-      OrderBy: 'newest_last_post',
-      UsernamePrefix: ''
-    }
-
-    // console.log(publicKey, publicKey.length, publicKey.length < 55)
-
-    if (publicKey.length === 55) {
-      data['ReaderPublicKeyBase58Check'] = publicKey
-      data['PublicKeyBase58Check'] = publicKey
-      data['Username'] = ''
-    } else {
-      data['ReaderPublicKeyBase58Check'] = superWalletPublicKey
-      data['PublicKeyBase58Check'] = ''
-      data['Username'] = publicKey
-    }
-
-    // console.log('Request', data)
-
-    fetch('https://api.bitclout.com/get-profiles', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(data)
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        resolve(data)
-        if (process.env.NODE_ENV === 'development') {
-          console.log('DEV Success:', data, publicKey)
-        }
-      })
-      .catch((error) => {
-        // resolve(error)
-        if (process.env.NODE_ENV === 'development') {
-          console.error('DEV Error:', error, publicKey)
-        }
-
-        getApiProfileData(publicKey)
-      })
+function renderHtmlUserListToWatch(users) {
+  users.forEach((user, i) => {
+    renderHtmlUser(user)
   })
 }
 
-function renderHtmlUserListToWatch() {
-  let usersData = []
-
-  chrome.storage.sync.get('userListToWatch', ({ userListToWatch }) => {
-    // userListToWatch.forEach((publicKey, i) => {
-    // })
-
-    chrome.storage.sync.get(userListToWatch, (usersData) => {
-      // console.log('usersData', usersData)
-
-      Object.keys(usersData).forEach((key, i) => {
-        if (key != 'creatorList' && key != 'userListToWatch') {
-          renderHtmlUser(usersData[key])
-        }
-      })
-    })
-  })
-}
-
-function renderHtmlUser(userData) {
+function renderHtmlUser(user) {
   const container = document.getElementById('userListToWatchContainer')
   const tabItemElement = document.createElement('div')
   const leftWrapperElement = document.createElement('div')
@@ -229,12 +122,12 @@ function renderHtmlUser(userData) {
   userPicElement.classList.add('userPic')
   userNameElement.classList.add('userName')
   userRemoveButton.classList.add('userRemove')
-  userPicElement.style.backgroundImage = `url(${userData.profilePic})`
-  userNameElement.innerText = userData.username
+  userPicElement.style.backgroundImage = `url(${user['ProfileEntryResponse']['ProfilePic']})`
+  userNameElement.innerText = user['ProfileEntryResponse']['Username']
   userRemoveButton.innerText = 'Remove'
 
   userRemoveButton.addEventListener('click', (e) => {
-    userListToWatchRemoveItem(userData)
+    userListToWatchRemoveItem(user)
     e.target.parentElement.remove()
   })
 
@@ -252,12 +145,6 @@ function showHtmlFirstTab() {
 
 function userListToWatchRemoveItem(userData) {
   chrome.storage.sync.get('userListToWatch', ({ userListToWatch }) => {
-    userListToWatch.forEach((publicKey, i) => {
-      if (publicKey === userData.publicKey) {
-        chrome.storage.sync.remove(publicKey)
-      }
-    })
-
     userListToWatch.remove(userData.publicKey)
     chrome.storage.sync.set({ userListToWatch })
   })
@@ -265,5 +152,6 @@ function userListToWatchRemoveItem(userData) {
 
 checkAndMigrateData()
   .then(checkAndFetchData)
-  .then(renderHtmlUserListToWatch)
+  .then((data) => formatDataUserListToWatch(data))
+  .then((users) => renderHtmlUserListToWatch(users))
   .then(showHtmlFirstTab)

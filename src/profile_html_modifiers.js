@@ -79,12 +79,17 @@ function addHtmlProfileUserWatchButton(creatorProfileTopCard) {
             }
           })
 
-          chrome.storage.sync.set({ userListToWatch: newUserListToWatch })
+          chrome.storage.sync.set({
+            userListToWatch: [...new Set(newUserListToWatch)]
+          })
         } else {
           button.classList.add('muted')
 
           const newUserListToWatch = [...userListToWatch, publicKey]
-          chrome.storage.sync.set({ userListToWatch: newUserListToWatch })
+
+          chrome.storage.sync.set({
+            userListToWatch: [...new Set(newUserListToWatch)]
+          })
         }
       })
     })
