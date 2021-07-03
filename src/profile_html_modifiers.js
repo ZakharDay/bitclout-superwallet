@@ -26,226 +26,237 @@ function getHtmlProfilePublicKey() {
 }
 
 function addHtmlProfileFounderRewardPercentage() {
-  const profile = getStoreProfile()
-  const wrapper = document.createElement('div')
-  const percent = document.createElement('div')
-  const label = document.createElement('div')
-  wrapper.style.whitespace = 'nowrap'
-  percent.classList.add('font-weight-bold')
-  percent.style.display = 'inline'
-  label.classList.add('fc-muted')
-  label.style.display = 'inline'
-  label.innerText = ' Founder Reward'
+  const detector = document.querySelector('.founderReward')
 
-  // TODO: Refactor
-  percent.innerText = profile.founderReward / 100 + '%'
-
-  wrapper.appendChild(percent)
-  wrapper.appendChild(label)
-
-  document
-    .querySelector(
+  if (!detector) {
+    const target = document.querySelector(
       '.global__center__inner .d-flex.flex-column.pl-15px.pr-15px .fs-15px.pt-5px.d-flex.flex-wrap'
     )
-    .appendChild(wrapper)
+
+    const profile = getStoreProfile()
+    const wrapper = document.createElement('div')
+    const percent = document.createElement('div')
+    const label = document.createElement('div')
+
+    wrapper.classList.add('founderReward')
+    percent.classList.add('percent')
+    label.classList.add('label')
+    // TODO: Refactor
+    percent.innerText = profile.founderReward / 100 + '%'
+    label.innerText = ' Founder Reward'
+
+    wrapper.appendChild(percent)
+    wrapper.appendChild(label)
+    target.appendChild(wrapper)
+  }
 }
 
 function addHtmlProfileUserWatchButton(creatorProfileTopCard) {
-  const wrapper = document.querySelector('.creator-profile__top-bar')
-  wrapper.style.setProperty('justify-content', 'flex-end')
-  wrapper.style.setProperty('align-items', 'center')
+  const detector = document.querySelector('.watchButton')
 
-  const publicKey = getStoreProfilePublicKey()
-  const button = document.createElement('div')
-  button.classList.add('watchButton')
+  if (!detector) {
+    const publicKey = getStoreProfilePublicKey()
 
-  chrome.storage.sync.get('userListToWatch', ({ userListToWatch }) => {
-    if (userListToWatch.includes(publicKey)) {
-      button.classList.add('muted')
-    }
+    const target = document.querySelector('.creator-profile__top-bar')
+    target.classList.add('creatorProfileTopButtonSetContainer')
 
-    button.addEventListener('click', (e) => {
-      chrome.storage.sync.get('userListToWatch', ({ userListToWatch }) => {
-        if (userListToWatch.includes(publicKey)) {
-          button.classList.remove('muted')
+    const button = document.createElement('div')
+    button.classList.add('watchButton')
 
-          let newUserListToWatch = []
+    chrome.storage.sync.get('userListToWatch', ({ userListToWatch }) => {
+      if (userListToWatch.includes(publicKey)) {
+        button.classList.add('muted')
+      }
 
-          userListToWatch.forEach((userPublicKey, i) => {
-            if (userPublicKey === publicKey) {
-              chrome.storage.sync.remove(userPublicKey)
-            } else {
-              newUserListToWatch.push(userPublicKey)
-            }
-          })
+      button.addEventListener('click', (e) => {
+        chrome.storage.sync.get('userListToWatch', ({ userListToWatch }) => {
+          if (userListToWatch.includes(publicKey)) {
+            button.classList.remove('muted')
 
-          chrome.storage.sync.set({
-            userListToWatch: [...new Set(newUserListToWatch)]
-          })
-        } else {
-          button.classList.add('muted')
+            let newUserListToWatch = []
 
-          const newUserListToWatch = [...userListToWatch, publicKey]
+            userListToWatch.forEach((userPublicKey, i) => {
+              if (userPublicKey === publicKey) {
+                chrome.storage.sync.remove(userPublicKey)
+              } else {
+                newUserListToWatch.push(userPublicKey)
+              }
+            })
 
-          chrome.storage.sync.set({
-            userListToWatch: [...new Set(newUserListToWatch)]
-          })
-        }
+            chrome.storage.sync.set({
+              userListToWatch: [...new Set(newUserListToWatch)]
+            })
+          } else {
+            button.classList.add('muted')
+
+            const newUserListToWatch = [...userListToWatch, publicKey]
+
+            chrome.storage.sync.set({
+              userListToWatch: [...new Set(newUserListToWatch)]
+            })
+          }
+        })
       })
-    })
 
-    wrapper.appendChild(button)
-  })
+      target.appendChild(button)
+    })
+  }
 }
 
 function prepareHtmlProfileTabs() {
-  const profileWrapper = document.querySelector(
-    'creator-profile-details > .flex-grow-1'
-  )
+  const detector = document.querySelector('.walletTab')
 
-  const profileTabsWrapper = document.querySelector('tab-selector > div.d-flex')
-  profileTabsWrapper.classList.add('profileTabsWrapper')
-
-  const postsTab = document.querySelector(
-    'tab-selector > div.d-flex > div.d-flex:first-child'
-  )
-
-  const postsTabText = document.querySelector(
-    'tab-selector > div.d-flex > div.d-flex:first-child > div.d-flex:first-child'
-  )
-
-  const postsTabLine = document.querySelector(
-    'tab-selector > div.d-flex > div.d-flex:first-child > div:last-child'
-  )
-
-  const coinTab = document.querySelector(
-    'tab-selector > div.d-flex > div.d-flex:nth-child(2)'
-  )
-
-  const coinTabText = document.querySelector(
-    'tab-selector > div.d-flex > div.d-flex:nth-child(2) > div.d-flex:first-child'
-  )
-
-  const coinTabLine = document.querySelector(
-    'tab-selector > div.d-flex > div.d-flex:nth-child(2) > div:last-child'
-  )
-
-  const diamondsTab = document.querySelector(
-    'tab-selector > div.d-flex > div.d-flex:nth-child(3)'
-  )
-
-  const diamondsTabText = document.querySelector(
-    'tab-selector > div.d-flex > div.d-flex:nth-child(3) > div.d-flex:first-child'
-  )
-
-  const diamondsTabLine = document.querySelector(
-    'tab-selector > div.d-flex > div.d-flex:nth-child(3) > div:last-child'
-  )
-
-  const walletTab = document.createElement('div')
-  const walletTabText = document.createElement('div')
-  const walletTabLine = document.createElement('div')
-  // prettier-ignore
-  walletTab.classList.add('walletTab', 'd-flex', 'flex-column', 'align-items-center', 'h-100', 'pl-15px', 'pr-15px')
-  // prettier-ignore
-  walletTabText.classList.add('d-flex', 'h-100', 'align-items-center', 'fs-15px', 'fc-muted')
-  walletTabText.innerText = 'Creator Wallet'
-  walletTabLine.classList.add('walletTabLine', 'tab-underline-inactive')
-  walletTabLine.style.width = '50px'
-
-  postsTab.addEventListener('click', () => {
-    const walletTabContainer = document.querySelector('.walletTabContainer')
-
-    if (walletTabContainer) {
-      walletTabContainer.remove()
-    }
-
-    walletTab.classList.remove('active')
-    walletTabText.classList.remove('fc-default')
-    walletTabText.classList.add('fc-muted')
-    walletTabLine.classList.remove('tab-underline-active')
-    walletTabLine.classList.add('tab-underline-inactive')
-  })
-
-  coinTab.addEventListener('click', () => {
-    const walletTabContainer = document.querySelector('.walletTabContainer')
-
-    if (walletTabContainer) {
-      walletTabContainer.remove()
-    }
-
-    walletTab.classList.remove('active')
-    walletTabText.classList.remove('fc-default')
-    walletTabText.classList.add('fc-muted')
-    walletTabLine.classList.remove('tab-underline-active')
-    walletTabLine.classList.add('tab-underline-inactive')
-  })
-
-  diamondsTab.addEventListener('click', () => {
-    const walletTabContainer = document.querySelector('.walletTabContainer')
-
-    if (walletTabContainer) {
-      walletTabContainer.remove()
-    }
-
-    walletTab.classList.remove('active')
-    walletTabText.classList.remove('fc-default')
-    walletTabText.classList.add('fc-muted')
-    walletTabLine.classList.remove('tab-underline-active')
-    walletTabLine.classList.add('tab-underline-inactive')
-  })
-
-  walletTab.addEventListener('click', () => {
-    const postsTabContainer = document.querySelector(
-      'creator-profile-details > .flex-grow-1 > div:last-child'
-    )
-    const coinTabContainer = document.querySelector(
-      'creator-profile-details > .flex-grow-1 > div:last-child'
+  if (!detector) {
+    const profileWrapper = document.querySelector(
+      'creator-profile-details > .flex-grow-1'
     )
 
-    const walletTabContainer = document.createElement('div')
+    const profileTabsWrapper = document.querySelector(
+      'tab-selector > div.d-flex'
+    )
+    profileTabsWrapper.classList.add('profileTabsWrapper')
+
+    const postsTab = document.querySelector(
+      'tab-selector > div.d-flex > div.d-flex:first-child'
+    )
+
+    const postsTabText = document.querySelector(
+      'tab-selector > div.d-flex > div.d-flex:first-child > div.d-flex:first-child'
+    )
+
+    const postsTabLine = document.querySelector(
+      'tab-selector > div.d-flex > div.d-flex:first-child > div:last-child'
+    )
+
+    const coinTab = document.querySelector(
+      'tab-selector > div.d-flex > div.d-flex:nth-child(2)'
+    )
+
+    const coinTabText = document.querySelector(
+      'tab-selector > div.d-flex > div.d-flex:nth-child(2) > div.d-flex:first-child'
+    )
+
+    const coinTabLine = document.querySelector(
+      'tab-selector > div.d-flex > div.d-flex:nth-child(2) > div:last-child'
+    )
+
+    const diamondsTab = document.querySelector(
+      'tab-selector > div.d-flex > div.d-flex:nth-child(3)'
+    )
+
+    const diamondsTabText = document.querySelector(
+      'tab-selector > div.d-flex > div.d-flex:nth-child(3) > div.d-flex:first-child'
+    )
+
+    const diamondsTabLine = document.querySelector(
+      'tab-selector > div.d-flex > div.d-flex:nth-child(3) > div:last-child'
+    )
+
+    const walletTab = document.createElement('div')
+    const walletTabText = document.createElement('div')
+    const walletTabLine = document.createElement('div')
     // prettier-ignore
-    walletTabContainer.classList.add('walletTabContainer', 'loading', 'w-100', 'd-flex', 'flex-column')
-    walletTabContainer.innerText = 'Preloading data...'
+    walletTab.classList.add('walletTab', 'd-flex', 'flex-column', 'align-items-center', 'h-100', 'pl-15px', 'pr-15px')
+    // prettier-ignore
+    walletTabText.classList.add('d-flex', 'h-100', 'align-items-center', 'fs-15px', 'fc-muted')
+    walletTabText.innerText = 'Creator Wallet'
+    walletTabLine.classList.add('walletTabLine', 'tab-underline-inactive')
+    walletTabLine.style.width = '50px'
 
-    walletTab.classList.add('active')
-    walletTabText.classList.add('fc-default')
-    walletTabText.classList.remove('fc-muted')
-    walletTabLine.classList.remove('tab-underline-inactive')
-    walletTabLine.classList.add('tab-underline-active')
+    postsTab.addEventListener('click', () => {
+      const walletTabContainer = document.querySelector('.walletTabContainer')
 
-    postsTabText.classList.remove('fc-default')
-    postsTabText.classList.add('fc-muted')
-    postsTabLine.classList.remove('tab-underline-active')
-    postsTabLine.classList.add('tab-underline-inactive')
+      if (walletTabContainer) {
+        walletTabContainer.remove()
+      }
 
-    coinTabText.classList.remove('fc-default')
-    coinTabText.classList.add('fc-muted')
-    coinTabLine.classList.remove('tab-underline-active')
-    coinTabLine.classList.add('tab-underline-inactive')
+      walletTab.classList.remove('active')
+      walletTabText.classList.remove('fc-default')
+      walletTabText.classList.add('fc-muted')
+      walletTabLine.classList.remove('tab-underline-active')
+      walletTabLine.classList.add('tab-underline-inactive')
+    })
 
-    diamondsTabText.classList.remove('fc-default')
-    diamondsTabText.classList.add('fc-muted')
-    diamondsTabLine.classList.remove('tab-underline-active')
-    diamondsTabLine.classList.add('tab-underline-inactive')
+    coinTab.addEventListener('click', () => {
+      const walletTabContainer = document.querySelector('.walletTabContainer')
 
-    if (postsTabContainer) {
-      postsTabContainer.remove()
-    } else if (coinTabContainer) {
-      coinTabContainer.remove()
-    }
+      if (walletTabContainer) {
+        walletTabContainer.remove()
+      }
 
-    let url = new URL(window.location)
-    url.search = '?tab=creator-wallet'
-    window.history.pushState('', '', url)
-    profileWrapper.appendChild(walletTabContainer)
+      walletTab.classList.remove('active')
+      walletTabText.classList.remove('fc-default')
+      walletTabText.classList.add('fc-muted')
+      walletTabLine.classList.remove('tab-underline-active')
+      walletTabLine.classList.add('tab-underline-inactive')
+    })
 
-    updateDataCreatorWallet()
-  })
+    diamondsTab.addEventListener('click', () => {
+      const walletTabContainer = document.querySelector('.walletTabContainer')
 
-  walletTab.appendChild(walletTabText)
-  walletTab.appendChild(walletTabLine)
-  profileTabsWrapper.appendChild(walletTab)
+      if (walletTabContainer) {
+        walletTabContainer.remove()
+      }
+
+      walletTab.classList.remove('active')
+      walletTabText.classList.remove('fc-default')
+      walletTabText.classList.add('fc-muted')
+      walletTabLine.classList.remove('tab-underline-active')
+      walletTabLine.classList.add('tab-underline-inactive')
+    })
+
+    walletTab.addEventListener('click', () => {
+      const postsTabContainer = document.querySelector(
+        'creator-profile-details > .flex-grow-1 > div:last-child'
+      )
+      const coinTabContainer = document.querySelector(
+        'creator-profile-details > .flex-grow-1 > div:last-child'
+      )
+
+      const walletTabContainer = document.createElement('div')
+      // prettier-ignore
+      walletTabContainer.classList.add('walletTabContainer', 'loading', 'w-100', 'd-flex', 'flex-column')
+      walletTabContainer.innerText = 'Preloading data...'
+
+      walletTab.classList.add('active')
+      walletTabText.classList.add('fc-default')
+      walletTabText.classList.remove('fc-muted')
+      walletTabLine.classList.remove('tab-underline-inactive')
+      walletTabLine.classList.add('tab-underline-active')
+
+      postsTabText.classList.remove('fc-default')
+      postsTabText.classList.add('fc-muted')
+      postsTabLine.classList.remove('tab-underline-active')
+      postsTabLine.classList.add('tab-underline-inactive')
+
+      coinTabText.classList.remove('fc-default')
+      coinTabText.classList.add('fc-muted')
+      coinTabLine.classList.remove('tab-underline-active')
+      coinTabLine.classList.add('tab-underline-inactive')
+
+      diamondsTabText.classList.remove('fc-default')
+      diamondsTabText.classList.add('fc-muted')
+      diamondsTabLine.classList.remove('tab-underline-active')
+      diamondsTabLine.classList.add('tab-underline-inactive')
+
+      if (postsTabContainer) {
+        postsTabContainer.remove()
+      } else if (coinTabContainer) {
+        coinTabContainer.remove()
+      }
+
+      let url = new URL(window.location)
+      url.search = '?tab=creator-wallet'
+      window.history.pushState('', '', url)
+      profileWrapper.appendChild(walletTabContainer)
+
+      updateDataCreatorWallet()
+    })
+
+    walletTab.appendChild(walletTabText)
+    walletTab.appendChild(walletTabLine)
+    profileTabsWrapper.appendChild(walletTab)
+  }
 }
 
 function updateHtmlProfileCreatorWallet(data) {

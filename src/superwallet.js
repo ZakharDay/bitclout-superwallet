@@ -10,7 +10,8 @@ import {
   injectHtmlCss,
   markHtmlBody,
   getHtmlBitCloutPrice,
-  addHtmlUserExternalLinks
+  addHtmlUserExternalLinks,
+  addHtmlBitCloutPrice
 } from './html_modifiers'
 
 import {
@@ -20,6 +21,7 @@ import {
 } from './browse_html_modifiers'
 
 import {
+  getApiBitCloutPrice,
   getApiWalletPortfolioItemData,
   getChromeStorageWatchedCreatorsData,
   getApiPostMentionData,
@@ -80,37 +82,54 @@ function waitAsyncPageLoad() {
   const urlPart = pathname.substr(1)
   const urlPartFirstLetter = urlPart.charAt(0)
   const urlPartSecondLetter = urlPart.charAt(1)
-  const firstLettersAccepted = ['w', 'u', 'b']
+  const firstLettersAccepted = ['w', 'u', 'b', 'n', 's', 'b']
+  const mainDetector = document.querySelector('.global__center__inner')
+  const profileDetector = document.querySelector('.creator-profile__top-bar')
 
   document.addEventListener('click', () => {
     initModalCatcher()
   })
 
   if (firstLettersAccepted.includes(urlPartFirstLetter)) {
-    let detectionElement = document.getElementsByClassName(
-      'global__center__inner'
-    )
-
-    if (detectionElement != null && detectionElement.length > 0) {
+    if (document.head && document.body && mainDetector) {
       injectHtmlCss()
       markHtmlBody(urlPartFirstLetter)
 
-      if (urlPartFirstLetter === 'w') {
+      if (urlPartFirstLetter === 'w' && mainDetector) {
         initWalletPage()
         initSidebar()
-      } else if (urlPartFirstLetter === 'u') {
+      } else if (urlPartFirstLetter === 'u' && profileDetector) {
         const urlLastPart = urlPart.substr(urlPart.lastIndexOf('/') + 1)
 
         if (urlLastPart != 'buy' && urlLastPart != 'sell') {
           initProfilePage()
         }
-      } else if (urlPartFirstLetter === 'b' && urlPartSecondLetter === 'r') {
+      } else if (
+        urlPartFirstLetter === 'b' &&
+        urlPartSecondLetter === 'r' &&
+        mainDetector
+      ) {
         initBrowsePage()
+      } else if (
+        urlPartFirstLetter === 'n' ||
+        urlPartFirstLetter === 's' ||
+        urlPartFirstLetter === 'b'
+      ) {
+        getApiBitCloutPrice().then((bitCloutPrice) => {
+          setStoreBitCloutPrice(bitCloutPrice)
+          addHtmlBitCloutPrice()
+        })
+      } else {
+        markHtmlBody('')
+
+        setTimeout(() => {
+          waitAsyncPageLoad()
+        }, 100)
       }
     } else {
       setTimeout(() => {
         waitAsyncPageLoad()
-      }, 1000)
+      }, 100)
     }
   }
 }
@@ -129,61 +148,55 @@ function initModalCatcher() {
 }
 
 function initWalletPage() {
-  const bitCloutPrice = getHtmlBitCloutPrice()
-  setStoreBitCloutPrice(bitCloutPrice)
+  getApiBitCloutPrice().then((bitCloutPrice) => {
+    setStoreBitCloutPrice(bitCloutPrice)
 
-  const publicKey = getHtmlWalletPublicKey()
-  setStorePublicKey(publicKey)
+    // Temporary
+    addHtmlBitCloutPrice()
+    // Temporary
 
-  const walletPortfolio = getHtmlWalletPortfolio()
+    const publicKey = getHtmlWalletPublicKey()
+    setStorePublicKey(publicKey)
 
-  setStoreWalletPortfolio(walletPortfolio)
-    .then(modifyHtmlWalletGridOnFirstLoad)
-    .then(prepareHtmlWalletForNextDataLoad)
-    .then(updateDataWalletPortfolio)
-    .then(addHtmlWalletUpdateButton)
+    const walletPortfolio = getHtmlWalletPortfolio()
+
+    setStoreWalletPortfolio(walletPortfolio)
+      .then(modifyHtmlWalletGridOnFirstLoad)
+      .then(prepareHtmlWalletForNextDataLoad)
+      .then(updateDataWalletPortfolio)
+      .then(addHtmlWalletUpdateButton)
+  })
 }
 
 function initProfilePage() {
-  const pathname = window.location.pathname
-  const detectionElement = document.getElementsByClassName('userExternalLinks')
-  const creatorProfileTopCard = document.querySelector(
-    '.global__center__inner .position-relative'
-  )
+  getApiBitCloutPrice().then((bitCloutPrice) => {
+    setStoreBitCloutPrice(bitCloutPrice)
 
-  if (detectionElement.length == 0 && creatorProfileTopCard != null) {
-    const secondDetectionElement = document.getElementsByClassName(
-      'userExternalLinks'
+    addHtmlBitCloutPrice()
+
+    const publicKey = getHtmlProfilePublicKey()
+    setStoreProfilePublicKey(publicKey)
+
+    const creatorProfileTopCard = document.querySelector(
+      '.creator-profile__top-bar'
     )
 
-    if (secondDetectionElement.length == 0) {
-      const bitCloutPrice = getHtmlBitCloutPrice()
-      setStoreBitCloutPrice(bitCloutPrice)
-
-      const publicKey = getHtmlProfilePublicKey()
-      setStoreProfilePublicKey(publicKey)
-
-      getApiUsersData([publicKey])
-        .then((data) => prepareDataCreatorWallet(data))
-        .then((data) =>
-          Promise.all([
-            setStoreCreatorWallet(data.creatorWallet),
-            setStoreProfile(data.profile)
-          ])
-        )
-        .then(() => {
-          const profile = getStoreProfile()
-          addHtmlUserExternalLinks(creatorProfileTopCard, profile)
-          addHtmlProfileFounderRewardPercentage()
-          addHtmlProfileUserWatchButton(creatorProfileTopCard)
-          prepareHtmlProfileTabs()
-        })
-    }
-  } else {
-    setTimeout(() => {
-      initProfilePage()
-    }, 1000)
-  }
+    getApiUsersData([publicKey])
+      .then((data) => prepareDataCreatorWallet(data))
+      .then((data) =>
+        Promise.all([
+          setStoreCreatorWallet(data.creatorWallet),
+          setStoreProfile(data.profile)
+        ])
+      )
+      .then(() => {
+        const profile = getStoreProfile()
+        addHtmlUserExternalLinks(creatorProfileTopCard, profile)
+        // addHtmlProfileFounderRewardPercentage()
+        addHtmlProfileUserWatchButton(creatorProfileTopCard)
+        prepareHtmlProfileTabs()
+      })
+  })
 }
 
 function initSidebar() {
@@ -208,43 +221,103 @@ function initSidebar() {
 
 // TODO: Refactor this
 function initBrowsePage() {
-  const bitCloutPrice = getHtmlBitCloutPrice()
-  setStoreBitCloutPrice(bitCloutPrice)
-  addHtmlDropdown()
+  getApiBitCloutPrice().then((bitCloutPrice) => {
+    setStoreBitCloutPrice(bitCloutPrice)
 
-  const textarea = document.querySelector('textarea.feed-create-post__textarea')
-  const dropdown = document.createElement('div')
+    addHtmlBitCloutPrice()
 
-  document.addEventListener(
-    'click',
-    function (e) {
-      if (!e.target.closest('.mentionDropdown')) {
-        let mention = getStoreMention()
+    addHtmlDropdown()
 
-        if (mention.suggest === true) {
-          mention = {
-            suggest: false,
-            usernamePrefix: '',
-            lastInteraction: 0,
-            data: {}
+    const textarea = document.querySelector(
+      'textarea.feed-create-post__textarea'
+    )
+    const dropdown = document.createElement('div')
+
+    document.addEventListener(
+      'click',
+      function (e) {
+        if (!e.target.closest('.mentionDropdown')) {
+          let mention = getStoreMention()
+
+          if (mention.suggest === true) {
+            mention = {
+              suggest: false,
+              usernamePrefix: '',
+              lastInteraction: 0,
+              data: {}
+            }
+
+            setStoreMention(mention)
+            hideHtmlDropdown()
+          }
+        }
+      },
+      false
+    )
+
+    textarea.addEventListener('keydown', () => {
+      const key = event.keyCode
+      let mention = getStoreMention()
+
+      if (key == 8 || key == 46) {
+        const caretPlace = textarea.selectionEnd - 1
+        const value = textarea.value.slice(0, caretPlace)
+
+        const atPlace = value.lastIndexOf('@')
+        const spacePlace = value.lastIndexOf(' ')
+        const breakPlace = value.lastIndexOf('\n')
+
+        if (atPlace != -1) {
+          let usernamePrefix = ''
+          if (spacePlace == -1 && breakPlace == -1) {
+            usernamePrefix = value.slice(atPlace + 1, caretPlace)
+          } else if (
+            (spacePlace != -1 && atPlace > spacePlace) ||
+            (breakPlace != -1 && atPlace > breakPlace)
+          ) {
+            usernamePrefix = value.slice(atPlace + 1, caretPlace)
           }
 
-          setStoreMention(mention)
-          hideHtmlDropdown()
+          dropdown.innerHTML = ''
+
+          if (usernamePrefix != '') {
+            getApiPostMentionData(usernamePrefix).then((data) => {
+              mention = {
+                suggest: true,
+                usernamePrefix: usernamePrefix,
+                lastInteraction: Date.now(),
+                data: data
+              }
+
+              setStoreMention(mention).then(updateHtmlDropdown)
+            })
+          } else {
+            mention = {
+              suggest: false,
+              usernamePrefix: '',
+              lastInteraction: 0,
+              data: {}
+            }
+
+            setStoreMention(mention).then(hideHtmlDropdown)
+          }
         }
+      } else if (key == 27) {
+        mention = {
+          suggest: false,
+          usernamePrefix: '',
+          lastInteraction: 0,
+          data: {}
+        }
+
+        setStoreMention(mention).then(hideHtmlDropdown)
       }
-    },
-    false
-  )
+    })
 
-  textarea.addEventListener('keydown', () => {
-    const key = event.keyCode
-    let mention = getStoreMention()
-
-    if (key == 8 || key == 46) {
-      const caretPlace = textarea.selectionEnd - 1
+    textarea.addEventListener('input', () => {
+      let mention = getStoreMention()
+      const caretPlace = textarea.selectionEnd
       const value = textarea.value.slice(0, caretPlace)
-
       const atPlace = value.lastIndexOf('@')
       const spacePlace = value.lastIndexOf(' ')
       const breakPlace = value.lastIndexOf('\n')
@@ -284,61 +357,7 @@ function initBrowsePage() {
           setStoreMention(mention).then(hideHtmlDropdown)
         }
       }
-    } else if (key == 27) {
-      mention = {
-        suggest: false,
-        usernamePrefix: '',
-        lastInteraction: 0,
-        data: {}
-      }
-
-      setStoreMention(mention).then(hideHtmlDropdown)
-    }
-  })
-
-  textarea.addEventListener('input', () => {
-    let mention = getStoreMention()
-    const caretPlace = textarea.selectionEnd
-    const value = textarea.value.slice(0, caretPlace)
-    const atPlace = value.lastIndexOf('@')
-    const spacePlace = value.lastIndexOf(' ')
-    const breakPlace = value.lastIndexOf('\n')
-
-    if (atPlace != -1) {
-      let usernamePrefix = ''
-      if (spacePlace == -1 && breakPlace == -1) {
-        usernamePrefix = value.slice(atPlace + 1, caretPlace)
-      } else if (
-        (spacePlace != -1 && atPlace > spacePlace) ||
-        (breakPlace != -1 && atPlace > breakPlace)
-      ) {
-        usernamePrefix = value.slice(atPlace + 1, caretPlace)
-      }
-
-      dropdown.innerHTML = ''
-
-      if (usernamePrefix != '') {
-        getApiPostMentionData(usernamePrefix).then((data) => {
-          mention = {
-            suggest: true,
-            usernamePrefix: usernamePrefix,
-            lastInteraction: Date.now(),
-            data: data
-          }
-
-          setStoreMention(mention).then(updateHtmlDropdown)
-        })
-      } else {
-        mention = {
-          suggest: false,
-          usernamePrefix: '',
-          lastInteraction: 0,
-          data: {}
-        }
-
-        setStoreMention(mention).then(hideHtmlDropdown)
-      }
-    }
+    })
   })
 }
 

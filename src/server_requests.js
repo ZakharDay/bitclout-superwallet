@@ -1,7 +1,8 @@
 import {
+  getExchangeRate,
+  getBitcoinPrice,
   buyOrSellUrl,
   getProfilesUrl,
-  getFollowsStateless,
   getUsersUrl
 } from './urls'
 
@@ -19,6 +20,33 @@ import { modifyHtmlSidebarOnFirstLoad } from './sidebar_html_modifiers'
 import { updateHtmlDropdown } from './browse_html_modifiers'
 import { getStorePublicKey } from './store'
 import { updateWalletPortfolioItemData } from './actions'
+
+function getApiBitCloutPrice() {
+  return new Promise(function (resolve, reject) {
+    fetch(getBitcoinPrice)
+      .then((response) => response.json())
+      .then((data) => {
+        const bitcoinPrice = data['USD']['last']
+
+        fetch(getExchangeRate)
+          .then((response) => response.json())
+          .then((data) => {
+            const satoshisPerBitCloutExchangeRate =
+              data['SatoshisPerBitCloutExchangeRate']
+
+            const bitCloutPriceinUSD = (
+              (bitcoinPrice / 100000000) *
+              satoshisPerBitCloutExchangeRate
+            ).toLocaleString(undefined, {
+              maximumFractionDigits: 2,
+              minimumFractionDigits: 2
+            })
+
+            resolve(bitCloutPriceinUSD)
+          })
+      })
+  })
+}
 
 function getApiWalletPortfolioItemData(item) {
   return new Promise(function (resolve, reject) {
@@ -86,16 +114,17 @@ function getApiCreatorCoinBuyOrSellData(creatorData) {
       headers: {
         'Content-Type': 'application/json'
       },
+      // mode: 'no-cors',
       credentials: 'include',
       body: JSON.stringify(data)
     })
       .then((response) => response.json())
       .then((data) => {
-        resolve(data)
-
         // if (process.env.NODE_ENV === 'development') {
         //   console.log('Success:', data)
         // }
+
+        resolve(data)
       })
       .catch((error) => {
         console.error('Error:', error)
@@ -180,6 +209,7 @@ function getApiUsersData(publicKeys) {
 }
 
 export {
+  getApiBitCloutPrice,
   getApiWalletPortfolioItemData,
   getApiCreatorCoinBuyOrSellData,
   getChromeStorageWatchedCreatorsData,

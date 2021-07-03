@@ -1,3 +1,4 @@
+import { profilePictureUrl } from './data_modifiers'
 import { getStorePublicKey, getStoreBitCloutPrice } from './store'
 import { mergeDataWalletPortfolioItem } from './data_modifiers'
 import { addHtmlUserExternalLinks } from './html_modifiers'
@@ -76,7 +77,9 @@ function addHtmlSidebarUserItem(user) {
 
   creatorListItemElement.href = `https://bitclout.com/u/${username}`
   // creatorListItemElement.id = username
-  creatorListItemElement.childNodes[0].style.backgroundImage = `url("${user['ProfileEntryResponse']['ProfilePic']}")`
+  creatorListItemElement.childNodes[0].style.backgroundImage = `url("${profilePictureUrl(
+    user['ProfileEntryResponse']['PublicKeyBase58Check']
+  )}")`
 
   creatorListItemElement.childNodes[1].childNodes[0].innerHTML = [
     username,

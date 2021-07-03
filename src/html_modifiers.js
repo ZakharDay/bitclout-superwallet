@@ -1,21 +1,27 @@
 import './superwallet.scss'
-import { getStoreProfile } from './store'
+import { getStoreBitCloutPrice, getStoreProfile } from './store'
 
 function injectHtmlCss() {
-  const css = require(/* webpackMode: "eager" */ '../dist/superwallet.css?raw')
-  const style = document.createElement('style')
+  const detector = document.querySelector('style#superwallet')
 
-  if (style.styleSheet) {
-    style.styleSheet.cssText = css
-  } else {
-    style.appendChild(document.createTextNode(css))
+  if (!detector) {
+    const css = require(/* webpackMode: "eager" */ '../dist/superwallet.css?raw')
+    const style = document.createElement('style')
+    style.id = 'superwallet'
+
+    if (style.styleSheet) {
+      style.styleSheet.cssText = css
+    } else {
+      style.appendChild(document.createTextNode(css))
+    }
+
+    document.querySelector('head').appendChild(style)
   }
-
-  document.getElementsByTagName('head')[0].appendChild(style)
 }
 
 function markHtmlBody(marker) {
-  let cssClass = 'superwallet'
+  const productCssClass = 'SuperWallet'
+  let cssClass = 'swPending'
   // console.log(marker)
 
   if (marker === 'b') {
@@ -26,7 +32,15 @@ function markHtmlBody(marker) {
     cssClass = 'swWallet'
   }
 
-  document.body.classList.remove('swBrowse', 'swProfile', 'swWallet')
+  document.body.classList.remove(
+    'SuperWallet',
+    'swPending',
+    'swBrowse',
+    'swProfile',
+    'swWallet'
+  )
+
+  document.body.classList.add(productCssClass)
   document.body.classList.add(cssClass)
 }
 
@@ -73,10 +87,55 @@ function addHtmlUserExternalLinks(element, data) {
   element.appendChild(userExternalLinks)
 }
 
+function addHtmlBitCloutPrice() {
+  const detector = document.querySelector('.bitCloutPrice')
+
+  if (!detector) {
+    const bitCloutPrice = getStoreBitCloutPrice()
+
+    const yourBitClout = parseFloat(
+      document.querySelector(
+        '.right-bar-creators__balance-box > div:nth-child(2) > div:nth-child(2) > div:first-child'
+      ).innerText
+    )
+
+    const yourBitCloutInUsd = (yourBitClout * bitCloutPrice).toLocaleString(
+      undefined,
+      {
+        maximumFractionDigits: 2,
+        minimumFractionDigits: 2
+      }
+    )
+
+    // prettier-ignore
+    const balanceBox = document.querySelector('.right-bar-creators__balance-box')
+    const line = document.createElement('hr')
+    balanceBox.appendChild(line)
+
+    const priceElement = document.createElement('div')
+    priceElement.classList.add('bitCloutPrice')
+    priceElement.innerText = `Rockets are cool, but $BitClout price is $${bitCloutPrice}, you have ${yourBitCloutInUsd} USD`
+    balanceBox.appendChild(priceElement)
+
+    // const yourBitCloutInUSDElement = document.createElement('div')
+    // yourBitCloutInUSDElement.classList.add('bitCloutPriceInUSD')
+    // yourBitCloutInUSDElement.innerText = `You have ${
+    //   yourBitClout * bitCloutPrice
+    // } USD`
+    // balanceBox.appendChild(yourBitCloutInUSDElement)
+
+    const copyrightElement = document.createElement('div')
+    copyrightElement.classList.add('swCopyright')
+    copyrightElement.innerText = '(by SuperWallet)'
+    balanceBox.appendChild(copyrightElement)
+  }
+}
+
 export {
   injectHtmlCss,
   markHtmlBody,
   getHtmlBitCloutPrice,
   clearElementsWithDash,
-  addHtmlUserExternalLinks
+  addHtmlUserExternalLinks,
+  addHtmlBitCloutPrice
 }

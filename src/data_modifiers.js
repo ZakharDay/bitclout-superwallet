@@ -1,3 +1,4 @@
+import { getSingleProfilePicture } from './urls'
 import { getStorePublicKey } from './store'
 import { getApiCreatorCoinBuyOrSellData } from './server_requests'
 
@@ -46,7 +47,7 @@ function prepareDataCreatorWallet(data) {
 
     profile = {
       username: profileEntry['Username'],
-      profilePic: profileEntry['ProfilePic'],
+      profilePic: profilePictureUrl(user['PublicKeyBase58Check']),
       publicKey: user['PublicKeyBase58Check'],
       founderReward: profileEntry['CoinEntry']['CreatorBasisPoints']
     }
@@ -57,7 +58,9 @@ function prepareDataCreatorWallet(data) {
       if (userYouHODL['BalanceNanos'] > 1) {
         const creatorWalletItem = {
           username: userYouHODL['ProfileEntryResponse']['Username'],
-          profilePic: userYouHODL['ProfileEntryResponse']['ProfilePic'],
+          profilePic: profilePictureUrl(
+            userYouHODL['CreatorPublicKeyBase58Check']
+          ),
           publicKey: userYouHODL['CreatorPublicKeyBase58Check'],
           balanceNanos: userYouHODL['BalanceNanos'],
           coinPriceNanos:
@@ -78,8 +81,13 @@ function prepareDataCreatorWallet(data) {
   })
 }
 
+function profilePictureUrl(publicKey) {
+  return [getSingleProfilePicture, publicKey].join('')
+}
+
 export {
   mergeDataWalletPortfolioItem,
   mergeDataWalletPortfolioItemShare,
-  prepareDataCreatorWallet
+  prepareDataCreatorWallet,
+  profilePictureUrl
 }
