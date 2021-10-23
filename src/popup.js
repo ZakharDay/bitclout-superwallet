@@ -1,4 +1,5 @@
 import './popup.scss'
+import { getUsersUrl, profilePicEndpoint } from './urls'
 
 Array.prototype.remove = function () {
   // prettier-ignore
@@ -65,7 +66,7 @@ function getApiUsersData(publicKeys) {
       PublicKeysBase58Check: publicKeys
     }
 
-    fetch('https://api.bitclout.com/get-users-stateless', {
+    fetch(getUsersUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -105,6 +106,7 @@ function formatDataUserListToWatch(data) {
 }
 
 function renderHtmlUserListToWatch(users) {
+  console.log('users', users)
   users.forEach((user, i) => {
     renderHtmlUser(user)
   })
@@ -122,7 +124,7 @@ function renderHtmlUser(user) {
   userPicElement.classList.add('userPic')
   userNameElement.classList.add('userName')
   userRemoveButton.classList.add('userRemove')
-  userPicElement.style.backgroundImage = `url(${user['ProfileEntryResponse']['ProfilePic']})`
+  userPicElement.style.backgroundImage = `url("${profilePicEndpoint}${user.PublicKeyBase58Check}?fallback=https://bitclout.com/assets/img/default_profile_pic.png")`
   userNameElement.innerText = user['ProfileEntryResponse']['Username']
   userRemoveButton.innerText = 'Remove'
 
@@ -145,7 +147,8 @@ function showHtmlFirstTab() {
 
 function userListToWatchRemoveItem(userData) {
   chrome.storage.sync.get('userListToWatch', ({ userListToWatch }) => {
-    userListToWatch.remove(userData.publicKey)
+    console.log('userListToWatch', userListToWatch, userData)
+    userListToWatch.remove(userData.PublicKeyBase58Check)
     chrome.storage.sync.set({ userListToWatch })
   })
 }

@@ -1,7 +1,7 @@
 {
   "name": "BitClout SuperWallet",
   "description": "Know real time prices to maximize trading profits",
-  "version": "0.10.6",
+  "version": "0.10.7",
   "manifest_version": 3,
   "content_scripts": [
     {

@@ -61,7 +61,8 @@ function getApiWalletPortfolioItemData(item) {
       OrderBy: 'newest_last_post',
       PublicKeyBase58Check: '',
       ReaderPublicKeyBase58Check: publicKey,
-      Username: item.username,
+      // Username: item.username,
+      Username: item,
       UsernamePrefix: ''
     }
 
@@ -82,6 +83,7 @@ function getApiWalletPortfolioItemData(item) {
       })
       .catch((error) => {
         // resolve(error)
+
         if (process.env.NODE_ENV === 'development') {
           console.error('DEV Error:', error)
         }

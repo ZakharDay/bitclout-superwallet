@@ -19,7 +19,7 @@ function calcAndFormatRealCoinPrice(item) {
 }
 
 function calcFounderRewardPercentage(item) {
-  return item.coinEntry.creatorBasisPoints / 100 + '%'
+  return item.CoinEntry.CreatorBasisPoints / 100 + '%'
 }
 
 function calcPortfolioItemShare(userThatHODL) {
@@ -50,7 +50,18 @@ function calcAndFormatPortfolioItemPriceInBitClout(nanos) {
     minimumFractionDigits: 4
   })
 
-  return [formatted, 'BC'].join(' ')
+  return [formatted, '$CLOUT'].join(' ')
+}
+
+function calcAndFormatPortfolioItemPriceInDeso(usd) {
+  const desoPrice = getStoreBitCloutPrice()
+
+  const formatted = (usd / desoPrice).toLocaleString(undefined, {
+    maximumFractionDigits: 2,
+    minimumFractionDigits: 2
+  })
+
+  return [formatted, '$DESO'].join(' ')
 }
 
 export {
@@ -61,5 +72,6 @@ export {
   calcPortfolioItemShare,
   calcPortfolioItemPriceInUsd,
   calcAndFormatPortfolioItemPriceInUsd,
-  calcAndFormatPortfolioItemPriceInBitClout
+  calcAndFormatPortfolioItemPriceInBitClout,
+  calcAndFormatPortfolioItemPriceInDeso
 }

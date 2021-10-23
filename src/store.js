@@ -4,6 +4,8 @@ let bitCloutPrice = 0
 let walletPortfolio = []
 let creatorWallet = []
 let profile = {}
+let portfolioLength = 0
+let portfolio = []
 
 let mention = {
   suggest: false,
@@ -29,6 +31,7 @@ function setStoreBitCloutPrice(newBitCloutPrice) {
 
 function getStoreWalletPortfolio() {
   return new Promise(function (resolve, reject) {
+    // console.log('PORTFOLIO', walletPortfolio)
     resolve(walletPortfolio)
   })
 }
@@ -36,6 +39,17 @@ function getStoreWalletPortfolio() {
 function setStoreWalletPortfolio(newWalletPortfolio) {
   return new Promise(function (resolve, reject) {
     walletPortfolio = newWalletPortfolio
+    resolve()
+  })
+}
+
+function getStorePortfolioLength() {
+  return portfolioLength
+}
+
+function setStorePortfolioLength(newPortfolioLength) {
+  return new Promise(function (resolve, reject) {
+    portfolioLength = newPortfolioLength
     resolve()
   })
 }
@@ -81,6 +95,10 @@ function setStoreCreatorWallet(newCreatorWallet) {
   })
 }
 
+function addStorePortfolio(item) {
+  portfolio.push(item)
+}
+
 export {
   getStorePublicKey,
   setStorePublicKey,
@@ -95,5 +113,8 @@ export {
   getStoreProfile,
   setStoreProfile,
   getStoreCreatorWallet,
-  setStoreCreatorWallet
+  setStoreCreatorWallet,
+  getStorePortfolioLength,
+  setStorePortfolioLength,
+  addStorePortfolio
 }

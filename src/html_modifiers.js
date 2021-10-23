@@ -73,10 +73,12 @@ function addHtmlUserExternalLinks(element, data) {
   const linkItemSignal = document.createElement('a')
   linkItemSignal.classList.add('linkItem', 'signalClout')
 
-  linkItemPulse.href = `https://www.bitcloutpulse.com/profiles/${data.publicKey}`
+  linkItemPulse.href = `https://bitcloutpulse.com/app/profiles/${data.publicKey}`
   linkItemPulse.target = '_blank'
   linkItemPulse.innerText = 'BitCloutPulse'
-  linkItemSignal.href = `https://www.signalclout.com/profile-analyzer?search=${data.username}&history=true`
+  linkItemSignal.href = `https://www.signalclout.com/u/${
+    data.Username ? data.Username : data.username
+  }/metrics`
   linkItemSignal.target = '_blank'
   linkItemSignal.innerText = 'SignalClout'
 
@@ -108,14 +110,14 @@ function addHtmlBitCloutPrice() {
     )
 
     // prettier-ignore
-    const balanceBox = document.querySelector('.right-bar-creators__balance-box')
-    const line = document.createElement('hr')
-    balanceBox.appendChild(line)
+    // const balanceBox = document.querySelector('.right-bar-creators__balance-box')
+    // const line = document.createElement('hr')
+    // balanceBox.appendChild(line)
 
-    const priceElement = document.createElement('div')
-    priceElement.classList.add('bitCloutPrice')
-    priceElement.innerText = `Rockets are cool, but $BitClout price is $${bitCloutPrice}, you have ${yourBitCloutInUsd} USD`
-    balanceBox.appendChild(priceElement)
+    // const priceElement = document.createElement('div')
+    // priceElement.classList.add('bitCloutPrice')
+    // priceElement.innerText = `Rockets are cool, but $BitClout price is $${bitCloutPrice}, you have ${yourBitCloutInUsd} USD`
+    // balanceBox.appendChild(priceElement)
 
     // const yourBitCloutInUSDElement = document.createElement('div')
     // yourBitCloutInUSDElement.classList.add('bitCloutPriceInUSD')
@@ -124,10 +126,10 @@ function addHtmlBitCloutPrice() {
     // } USD`
     // balanceBox.appendChild(yourBitCloutInUSDElement)
 
-    const copyrightElement = document.createElement('div')
-    copyrightElement.classList.add('swCopyright')
-    copyrightElement.innerText = '(by SuperWallet)'
-    balanceBox.appendChild(copyrightElement)
+    // const copyrightElement = document.createElement('div')
+    // copyrightElement.classList.add('swCopyright')
+    // copyrightElement.innerText = '(by SuperWallet)'
+    // balanceBox.appendChild(copyrightElement)
   }
 }
 

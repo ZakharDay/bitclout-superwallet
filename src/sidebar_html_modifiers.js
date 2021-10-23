@@ -8,7 +8,7 @@ import {
   calcFounderRewardPercentage
 } from './calcs_and_formatters'
 
-function modifyHtmlSidebarOnFirstLoad() {
+function modifyHtmlSidebarOnFirstLoad(userListToWatch) {
   const publicKey = getStorePublicKey()
   const bitCloutPrice = getStoreBitCloutPrice()
   const sidebar = document.querySelector('.global__sidebar__inner')
@@ -23,19 +23,21 @@ function modifyHtmlSidebarOnFirstLoad() {
   container.classList.add('watchListContainer')
   const heading = document.createElement('div')
   heading.classList.add('fs-15px', 'text-grey5', 'font-weight-bold', 'mb-15px')
-  heading.innerText = 'Your Watch List'
+  heading.innerText = 'SuperWallet Watch List'
 
   header.appendChild(heading)
   // container.appendChild(loader)
   wrapper.appendChild(header)
   wrapper.appendChild(container)
 
-  if (!walletTrackerWrapper) {
-    // console.log('first')
-    sidebar.insertBefore(wrapper, balanceBox.nextSibling)
-  } else {
-    // console.log('second', walletTrackerWrapper)
-    sidebar.insertBefore(wrapper, walletTrackerWrapper.nextSibling)
+  if (userListToWatch.length != 0) {
+    if (!walletTrackerWrapper) {
+      // console.log('first')
+      sidebar.insertBefore(wrapper, balanceBox.nextSibling)
+    } else {
+      // console.log('second', walletTrackerWrapper)
+      sidebar.insertBefore(wrapper, walletTrackerWrapper.nextSibling)
+    }
   }
 }
 

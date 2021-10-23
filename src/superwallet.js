@@ -37,7 +37,8 @@ import {
   setStoreProfilePublicKey,
   setStoreCreatorWallet,
   getStoreProfile,
-  setStoreProfile
+  setStoreProfile,
+  getStorePortfolioLength
 } from './store'
 
 import {
@@ -49,6 +50,8 @@ import {
 
 import {
   getHtmlWalletPublicKey,
+  prepareHtmlWalletPortfolio,
+  updateHtmlPortfolio,
   getHtmlWalletPortfolio,
   addHtmlWalletUpdateButton,
   modifyHtmlWalletGridOnFirstLoad,
@@ -59,6 +62,8 @@ import {
   modifyHtmlSidebarOnFirstLoad,
   renderHtmlSidebarUsers
 } from './sidebar_html_modifiers'
+
+let pageObserver
 
 function observeUrlChange() {
   let lastUrl = location.href
@@ -74,6 +79,43 @@ function observeUrlChange() {
 
   function onUrlChange() {
     waitAsyncPageLoad()
+
+    if (pageObserver) {
+      pageObserver.unobserve()
+    }
+  }
+}
+
+function observePortfolioChange() {
+  let walletPortfolioHtml = document.querySelector(
+    'wallet > .d-flex > .row + div'
+  )
+
+  walletPortfolioHtml = walletPortfolioHtml.childNodes
+
+  walletPortfolioHtml.forEach((portfolioItemHtml, i) => {
+    if (
+      i > 0 &&
+      portfolioItemHtml.classList != undefined &&
+      portfolioItemHtml.childNodes.length != 0
+    ) {
+    }
+  })
+
+  pageObserver = new MutationObserver(() => {
+    const portfolioLength = getStorePortfolioLength()
+
+    const walletPortfolioHtml = document.querySelector(
+      'wallet > .d-flex > .row + div'
+    ).childNodes
+
+    if (portfolioLength !== walletPortfolioHtml.length) {
+      onPortfolioChange()
+    }
+  }).observe(document, { subtree: true, childList: true })
+
+  function onPortfolioChange() {
+    updateHtmlPortfolio()
   }
 }
 
@@ -151,28 +193,16 @@ function initWalletPage() {
   getApiBitCloutPrice().then((bitCloutPrice) => {
     setStoreBitCloutPrice(bitCloutPrice)
 
-    // Temporary
-    addHtmlBitCloutPrice()
-    // Temporary
-
     const publicKey = getHtmlWalletPublicKey()
     setStorePublicKey(publicKey)
-
-    const walletPortfolio = getHtmlWalletPortfolio()
-
-    setStoreWalletPortfolio(walletPortfolio)
-      .then(modifyHtmlWalletGridOnFirstLoad)
-      .then(prepareHtmlWalletForNextDataLoad)
-      .then(updateDataWalletPortfolio)
-      .then(addHtmlWalletUpdateButton)
+    prepareHtmlWalletPortfolio()
+    updateHtmlPortfolio().then(observePortfolioChange)
   })
 }
 
 function initProfilePage() {
   getApiBitCloutPrice().then((bitCloutPrice) => {
     setStoreBitCloutPrice(bitCloutPrice)
-
-    addHtmlBitCloutPrice()
 
     const publicKey = getHtmlProfilePublicKey()
     setStoreProfilePublicKey(publicKey)
@@ -192,9 +222,8 @@ function initProfilePage() {
       .then(() => {
         const profile = getStoreProfile()
         addHtmlUserExternalLinks(creatorProfileTopCard, profile)
-        // addHtmlProfileFounderRewardPercentage()
         addHtmlProfileUserWatchButton(creatorProfileTopCard)
-        prepareHtmlProfileTabs()
+        // prepareHtmlProfileTabs()
       })
   })
 }
@@ -212,9 +241,11 @@ function initSidebar() {
       initSidebar()
     }, 1000)
   } else {
-    modifyHtmlSidebarOnFirstLoad()
     getChromeStorageWatchedCreatorsData()
-      .then((userListToWatch) => getApiUsersData(userListToWatch))
+      .then((userListToWatch) => {
+        modifyHtmlSidebarOnFirstLoad(userListToWatch)
+        getApiUsersData(userListToWatch)
+      })
       .then((data) => renderHtmlSidebarUsers(data))
   }
 }
